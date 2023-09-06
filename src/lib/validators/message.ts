@@ -4,6 +4,7 @@ export const MessageSchema = z.object({
   messageId: z.string(),
   isUserMessage: z.boolean(),
   text: z.string(),
+  chatId: z.string(),
 });
 
 // array validator

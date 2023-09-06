@@ -14,6 +14,9 @@ import { useSidebarContext } from '@/services/context/SidebarContext';
 import { BlockPicker, TwitterPicker } from 'react-color';
 
 import { IconCaretDown, IconCaretRight } from '@tabler/icons-react';
+import { useSession } from 'next-auth/react';
+import { toast } from 'react-hot-toast';
+import { LoaderDelete } from '@/components/loading/LoadingMsg';
 
 interface Props {
   folder: Folder;
@@ -31,6 +34,8 @@ export default function FolderComponent({ folder, onDrop }: Props) {
   const [currentColor, setCurrentColor] = useState(folder.backgroundColor);
   const colorPickerRef = useRef(null);
   const [textColorClass, setTextColorClass] = useState('white');
+  const [buttonDisabled, setIsButtonDisabled] = useState(false);
+  const { data: session } = useSession();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -65,7 +70,7 @@ export default function FolderComponent({ folder, onDrop }: Props) {
 
     setFolders(
       folders.map((folder: Folder) => {
-        if (folder.id === id) {
+        if (folder.folderId === id) {
           folder.title = title;
           return folder;
         }
@@ -75,19 +80,53 @@ export default function FolderComponent({ folder, onDrop }: Props) {
     setEditTitle(false);
   }
 
-  function deleteFolder(id: string) {
-    const updatedFolders = folders.filter((folder: Folder) => folder.id !== id);
-    setFolders(updatedFolders);
+  const handleDeleteFolder = async (id: string) => {
+    try {
+      setIsButtonDisabled(true);
 
-    // Remove all chats inside the deleted folder
-    const chatsToRemove = folders.find((folder) => folder.id === id)?.chatIds;
-    if (chatsToRemove) {
-      const updatedChats = chats.filter(
-        (chat) => !chatsToRemove.includes(chat.chatId)
-      );
-      setChats(updatedChats);
+      const accessToken = session?.user.accessToken;
+      if (!accessToken) {
+        console.error('User is not authenticated.');
+        return;
+      }
+      const response = await fetch('/api/removeFolder', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ folderUUID: id }),
+      });
+      console.log(response);
+
+      const data = await response.json();
+
+      console.log(data);
+      if (response.status === 200) {
+        const updatedFolders = folders.filter(
+          (folder: Folder) => folder.folderId !== id
+        );
+        setFolders(updatedFolders);
+        // Remove all chats inside the deleted folder
+        const chatsToRemove = folders.find(
+          (folder) => folder.folderId === id
+        )?.chatIds;
+        if (chatsToRemove) {
+          const updatedChats = chats.filter(
+            (chat) => !chatsToRemove.includes(chat.chatId)
+          );
+          setChats(updatedChats);
+        }
+        toast.success('Folder is Deleted Successfully');
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error('Failed to delete chat ');
+    } finally {
+      setIsButtonDisabled(false);
     }
-  }
+  };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -101,9 +140,9 @@ export default function FolderComponent({ folder, onDrop }: Props) {
         'Dropped chat with ID:',
         chatId,
         'into folder with ID:',
-        folder.id
+        folder.folderId
       );
-      onDrop(folder.id, chatId);
+      onDrop(folder.folderId, chatId);
     }
   };
 
@@ -114,7 +153,7 @@ export default function FolderComponent({ folder, onDrop }: Props) {
   const handleBackgroundColorChange = (color: string) => {
     setCurrentColor(color.hex);
     const updatedFolders = folders.map((f) =>
-      f.id === folder.id ? { ...f, backgroundColor: color.hex } : f
+      f.folderId === folder.folderId ? { ...f, backgroundColor: color.hex } : f
     );
     setFolders(updatedFolders);
   };
@@ -147,13 +186,13 @@ export default function FolderComponent({ folder, onDrop }: Props) {
                 value={title}
                 onChange={() => handleChange(event)}
                 autoFocus
-                className={`mr-12 flex-1 overflow-hidden overflow-ellipsis border-neutral-400 bg-transparent text-left text-[12.5px] leading-3 text-${textColorClass} outline-none focus:border-neutral-100`}
+                className={`mr-12 flex-1 overflow-hidden overflow-ellipsis border-neutral-400 bg-transparent text-left text-[12.5px] leading-3 text-${textColorClass} outline-none `}
               />
             </button>
 
             <div className='absolute right-1 z-10 flex text-gray-300'>
               <button
-                onClick={() => editFolderName(event, folder.id)}
+                onClick={() => editFolderName(event, folder.folderId)}
                 type='submit'
                 className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
                 <CheckIcon />
@@ -167,29 +206,35 @@ export default function FolderComponent({ folder, onDrop }: Props) {
           </>
         ) : (
           <>
-            <button
-              className='flex w-full cursor-pointer my-2 items-center gap-3 rounded-lg p-3 text-sm transition-colors duration-200 hover:bg-[#343541]/90 border border-gray-500'
-              onClick={toggleChatList}
-              style={{
-                backgroundColor: folder.backgroundColor,
-              }}>
-              {isChatListOpen ? (
-                <IconCaretDown size={18} color={textColorClass} />
-              ) : (
-                <IconCaretRight size={18} color={textColorClass} />
-              )}
+            {buttonDisabled ? (
+              <LoaderDelete />
+            ) : (
+              <>
+                <button
+                  className='flex w-full cursor-pointer my-2 items-center gap-3 rounded-lg p-3 text-sm transition-colors duration-200 hover:bg-[#343541]/90 border border-gray-500'
+                  onClick={toggleChatList}
+                  style={{
+                    backgroundColor: folder.backgroundColor,
+                  }}>
+                  {isChatListOpen ? (
+                    <IconCaretDown size={18} color={textColorClass} />
+                  ) : (
+                    <IconCaretRight size={18} color={textColorClass} />
+                  )}
 
-              <div
-                className={`relative max-h-5 flex-1 overflow-hidden text-red whitespace-nowrap break-all text-left text-[12.5px] leading-3 text-${textColorClass}`}>
-                {folder.title}
-              </div>
-            </button>
+                  <div
+                    className={`relative max-h-5 flex-1 overflow-hidden text-red whitespace-nowrap break-all text-left text-[12.5px] leading-3 text-${textColorClass}`}>
+                    {folder.title}
+                  </div>
+                </button>
+              </>
+            )}
 
-            {deleteFolderConfirm ? (
+            {deleteFolderConfirm && !buttonDisabled ? (
               <>
                 <div className='absolute right-1 z-10 flex text-gray-300'>
                   <button
-                    onClick={() => deleteFolder(folder.id)}
+                    onClick={() => handleDeleteFolder(folder.folderId)}
                     className='min-w-[20px] p-1 text-red-600 '>
                     <CheckIcon />
                   </button>
@@ -202,37 +247,43 @@ export default function FolderComponent({ folder, onDrop }: Props) {
               </>
             ) : (
               <>
-                <div className='absolute right-1  flex text-gray-300'>
-                  <div>
-                    <div className='relative'>
-                      <button
-                        className={`bg-${textColorClass} font-bold p-3 rounded-full transition`}
-                        onClick={() =>
-                          setShowColorPicker(!showColorPicker)
-                        }></button>
-                    </div>
-                    {showColorPicker && (
-                      <div
-                        className='absolute -right-1 top-9 z-50'
-                        ref={colorPickerRef}>
-                        <BlockPicker
-                          onChange={handleBackgroundColorChange}
-                          color={currentColor}
-                        />
+                {!buttonDisabled && (
+                  <>
+                    <div className='absolute right-1  flex text-gray-300'>
+                      <div>
+                        <div className='relative'>
+                          <button
+                            className={`bg-${textColorClass} font-bold p-3 rounded-full transition`}
+                            onClick={() =>
+                              setShowColorPicker(!showColorPicker)
+                            }></button>
+                        </div>
+                        {showColorPicker && (
+                          <div
+                            className='absolute -right-1 top-9 z-50'
+                            ref={colorPickerRef}>
+                            <BlockPicker
+                              onChange={handleBackgroundColorChange}
+                              color={currentColor}
+                            />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => setEditTitle(!editTitle)}
-                    className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
-                    <EditIcon />
-                  </button>
-                  <button
-                    onClick={() => setDeleteFolderConfirm(!deleteFolderConfirm)}
-                    className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
-                    <DeleteIcon />
-                  </button>
-                </div>
+                      <button
+                        onClick={() => setEditTitle(!editTitle)}
+                        className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
+                        <EditIcon />
+                      </button>
+                      <button
+                        onClick={() =>
+                          setDeleteFolderConfirm(!deleteFolderConfirm)
+                        }
+                        className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
+                        <DeleteIcon />
+                      </button>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </>

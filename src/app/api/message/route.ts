@@ -8,7 +8,11 @@ import { MessageArraySchema } from '@/lib/validators/message';
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
+  console.log(messages);
+
   const parsedMessages = MessageArraySchema.parse(messages);
+
+  console.log(parsedMessages);
 
   const outboundMessages: ChatGPTMessage[] = parsedMessages.map((message) => {
     return {
@@ -30,6 +34,7 @@ export async function POST(req: Request) {
   };
 
   const stream = await OpenAiStream(payload);
+  console.log(stream);
 
   return new Response(stream);
 }

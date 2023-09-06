@@ -4,28 +4,29 @@ export async function POST(req: Request) {
   try {
     const { method } = req;
     if (method === 'POST') {
-      const { user } = await req.json();
+      const chatTitle = await req.json();
 
-      const endpoint = `http://localhost:9000/api/v1/auth/register`;
+      const token = req.headers.get('authorization') as string;
+
+      const endpoint = `http://localhost:9000/api/v1/chat/NewChat`;
       const options = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: token,
         },
-        body: JSON.stringify({ ...user }),
+        body: JSON.stringify(chatTitle),
       };
 
       const res = await fetch(endpoint, options);
-      const data = await res.json();
-      console.log(data);
 
-      if (res.status !== 201) {
+      const data = await res.json();
+
+      if (res.status !== 200) {
         return NextResponse.json(data, { status: data.statusCode });
       }
 
-      return NextResponse.json({
-        message: `You has been registered successfully with the email: ${user.email}.`,
-      });
+      return NextResponse.json(data);
     }
   } catch (error) {
     console.log(error);

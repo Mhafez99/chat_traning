@@ -40,6 +40,9 @@ interface StateContext {
   removeMessage: (id: string) => void;
   updateMessage: (id: string, updateFn: (prevText: string) => string) => void;
   setIsMessageUpdating: (isUpdating: boolean) => void;
+
+  chatHistory: Message[];
+  setChatHistory: React.Dispatch<React.SetStateAction<Message[]>>;
 }
 
 const initialState = {
@@ -68,6 +71,9 @@ const initialState = {
   removeMessage: () => {},
   updateMessage: () => {},
   setIsMessageUpdating: () => {},
+
+  chatHistory: [],
+  setChatHistory: () => {},
 };
 
 const AppContext = createContext<StateContext>(initialState);
@@ -88,6 +94,8 @@ export default function GlobalContext({ children }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isMessageUpading, setIsMessageUpdating] = useState<boolean>(false);
 
+  const [chatHistory, setChatHistory] = useState<Message[]>([]);
+
   const [isSettingsModalOpen, setIsSettingsModalOpen] =
     useState<boolean>(false);
   const [isAuthenticationModalOpen, setIsAuthenticationModalOpen] =
@@ -104,6 +112,7 @@ export default function GlobalContext({ children }: Props) {
 
   const addMessages = (message: Message) => {
     setMessages((prev) => [...prev, message]);
+    setChatHistory((prevAllMessages) => [...prevAllMessages, message]);
   };
 
   const removeMessage = (id: string) => {
@@ -168,7 +177,8 @@ export default function GlobalContext({ children }: Props) {
         updateMessage,
         isMessageUpading,
         setIsMessageUpdating,
-        
+        chatHistory,
+        setChatHistory,
       }}>
       {children}
     </AppContext.Provider>

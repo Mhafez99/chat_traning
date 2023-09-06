@@ -7,6 +7,8 @@ import { useGlobalContext } from '@/services/context/GlobalContext';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import SettingsIcon from '@mui/icons-material/Settings';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import Swal from 'sweetalert2';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -14,7 +16,7 @@ export default function ChatSidebarFooter() {
   const { user, setUser, chats, setChats, setIsSettingsModalOpen } =
     useGlobalContext();
   const { data: session } = useSession();
-
+  const router = useRouter();
   const handleDeleteClick = () => {
     Swal.fire({
       title: 'Are you sure?',
@@ -33,27 +35,23 @@ export default function ChatSidebarFooter() {
     });
   };
 
-  const router = useRouter();
-
   const handleLogout = async () => {
-    setUser({ ...user });
     const endpoint = '/api/logout';
     const options = {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
-      credential: 'include',
+      body: JSON.stringify({ refreshToken: session?.user.refreshToken }),
     };
-    const response = await fetch(endpoint, options);
-    console.log(response);
+    // const response = await fetch(endpoint, options);
+    // const results = await response.json();
+
     await signOut({
       redirect: false,
     });
     router.replace('/');
   };
-
-  console.log('SEESION OF THE USER', session?.user.accessToken);
 
   return (
     <div className='flex flex-col items-center space-y-1 border-t border-white/20 pt-1 text-sm'>
@@ -62,7 +60,7 @@ export default function ChatSidebarFooter() {
           <button
             onClick={handleDeleteClick}
             className='flex w-full cursor-pointer select-none items-center gap-3 rounded-md py-3 px-3 text-[14px] leading-3 text-white transition-colors duration-200 hover:bg-gray-500/10'>
-            <FileUploadIcon />
+            <DeleteForeverIcon />
             <span>Clear Chats</span>
           </button>
         </>
@@ -105,7 +103,7 @@ export default function ChatSidebarFooter() {
           <button
             onClick={handleLogout}
             className='flex w-full cursor-pointer select-none items-center gap-3 rounded-md py-3 px-3 text-[14px] leading-3 text-white transition-colors duration-200 hover:bg-gray-500/10'>
-            <SettingsIcon />
+            <MeetingRoomIcon />
             <span>Logout</span>
           </button>
         </>

@@ -7,7 +7,8 @@ import { useGlobalContext } from "@/services/context/GlobalContext";
 import { useRef, useState, MouseEvent, useEffect } from "react";
 
 import TypewritterComponent from "typewriter-effect";
-import AuthenticationModal from "./authenticationModal/AuthenticationModal";
+import AuthenticationModal from "./authenticationModal/AuthenticationModall";
+// import AuthenticationModal from "./authenticationModal/AuthenticationModal";
 
 const LandingHero = () => {
   const { isAuthenticationModalOpen, setIsAuthenticationModalOpen } =

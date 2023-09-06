@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ChangeEvent,
@@ -6,12 +6,12 @@ import {
   ReactNode,
   useContext,
   useState,
-} from "react";
+} from 'react';
 
-import Chat from "@/interfaces/chat.interface";
-import Folder from "@/interfaces/folder.interface";
-import Prompt from "@/interfaces/prompt.interface";
-import { useGlobalContext } from "./GlobalContext";
+import Chat from '@/interfaces/chat.interface';
+import Folder from '@/interfaces/folder.interface';
+import Prompt from '@/interfaces/prompt.interface';
+import { useGlobalContext } from './GlobalContext';
 
 interface StateContext {
   search: string;
@@ -24,11 +24,11 @@ interface StateContext {
   setFilteredPrompts: any;
   onSearch: any;
   folders: Folder[];
-  setFolders: (folders: Folder[]) => void;
+  setFolders: any;
 }
 
 const Context = createContext<StateContext>({
-  search: "",
+  search: '',
   setSearch: (search: string) => {},
   filteredFolders: [],
   setFilteredFolders: (filteredFolders: Folder[]) => {},
@@ -49,12 +49,12 @@ interface Props {
 
 export default function SidebarContext({ children }: Props) {
   const { chats, prompts } = useGlobalContext();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [filteredFolders, setFilteredFolders] = useState<Folder[]>([]);
   const [filteredChats, setFilteredChats] = useState<Chat[]>([]);
   const [filteredPrompts, setFilteredPrompts] = useState<Prompt[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [tabBackgroundColor, setTabBackgroundColor] = useState("#343541");
+  const [tabBackgroundColor, setTabBackgroundColor] = useState('#343541');
 
   const onSearch = (
     e: ChangeEvent<HTMLInputElement>,
@@ -62,7 +62,7 @@ export default function SidebarContext({ children }: Props) {
     setIsLoading: any
   ) => {
     setIsLoading(true);
-    if (sidebar === "chatSidebar") {
+    if (sidebar === 'chatSidebar') {
       setSearch((prevState) => {
         const currentState = e.target.value;
         return currentState;
@@ -73,7 +73,7 @@ export default function SidebarContext({ children }: Props) {
         );
         return currentState;
       });
-    } else if (sidebar === "promptSidebar") {
+    } else if (sidebar === 'promptSidebar') {
       setSearch((prevState) => {
         const currentState = e.target.value;
         return currentState;
@@ -102,8 +102,7 @@ export default function SidebarContext({ children }: Props) {
         onSearch,
         folders,
         setFolders,
-      }}
-    >
+      }}>
       {children}
     </Context.Provider>
   );

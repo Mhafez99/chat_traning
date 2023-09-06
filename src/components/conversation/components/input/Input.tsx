@@ -2,7 +2,6 @@
 
 import { FormEvent, useRef, useState } from 'react';
 import { useGlobalContext } from '@/services/context/GlobalContext';
-import Chat from '@/interfaces/chat.interface';
 import { nanoid } from 'nanoid';
 
 import SendIcon from '@mui/icons-material/Send';
@@ -14,19 +13,25 @@ import { CornerDownLeft, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface Props {
-  id: string;
+  chatId: string;
 }
 
-export default function MessageInput({ id }: Props) {
+export default function MessageInput({ chatId }: Props) {
   const {
     messages,
     addMessages,
     removeMessage,
     updateMessage,
     setIsMessageUpdating,
+    chatHistory,
+    setChatHistory,
+    theme,
   } = useGlobalContext();
   const [messageContent, setMessageContent] = useState<string>('');
   const textareaRef = useRef<null | HTMLTextAreaElement>(null);
+  const megOfSpecificChat = chatHistory.filter(
+    (message) => message.chatId === chatId
+  );
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,6 +40,7 @@ export default function MessageInput({ id }: Props) {
         messageId: nanoid(),
         isUserMessage: true,
         text: messageContent,
+        chatId,
       };
       sendMessage(message);
     }
@@ -42,12 +48,12 @@ export default function MessageInput({ id }: Props) {
 
   const { mutate: sendMessage, isLoading } = useMutation({
     mutationFn: async (message: Message) => {
-      const response = await fetch('/api/message', {
+      const response = await fetch(`/api/message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ messages: [message] }),
+        body: JSON.stringify({ messages: megOfSpecificChat.concat([message]) }),
       });
 
       if (!response.ok) {
@@ -68,8 +74,12 @@ export default function MessageInput({ id }: Props) {
         messageId: id,
         isUserMessage: false,
         text: '',
+        chatId,
       };
-
+      setChatHistory((prevChatHistory) => [
+        ...prevChatHistory,
+        responseMessage,
+      ]);
       addMessages(responseMessage);
 
       const reader = stream.getReader();
@@ -80,6 +90,8 @@ export default function MessageInput({ id }: Props) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunkValue = decoder.decode(value);
+        console.log(chunkValue);
+
         updateMessage(id, (prev) => prev + chunkValue);
       }
       // clean up
@@ -100,7 +112,8 @@ export default function MessageInput({ id }: Props) {
 
   return (
     <form onSubmit={(event: FormEvent<HTMLFormElement>) => handleSubmit(event)}>
-      <div className='relative bottom-4 flex justify-center items-center gap-3 self-center box-border mt-4 w-full bg-[#343541] text-[14px] leading-3 text-white'>
+      <div
+        className={`relative bottom-4 flex justify-center items-center gap-3 self-center box-border mt-4 w-full  text-[14px] leading-3 text-white`}>
         <TextareaAutosize
           ref={textareaRef}
           disabled={isLoading}
@@ -112,6 +125,7 @@ export default function MessageInput({ id }: Props) {
                 messageId: nanoid(),
                 isUserMessage: true,
                 text: messageContent,
+                chatId,
               };
               sendMessage(message);
             }

@@ -13,45 +13,21 @@ interface Props {
 }
 
 export default function Conversation({ id }: Props) {
-  const { chats } = useGlobalContext();
-
-  // const fetchMessages = async () => {
-  //   try {
-  //     const endpoint = `/api/chat/${id}`;
-  //     const options = {
-  //       method: 'GET',
-  //       header: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //     };
-  //     const response = await fetch(endpoint, options);
-  //     const data = await response.json();
-  //     setMessages(data);
-  //   } catch (error) {
-  //     console.log('ERROR', error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchMessages();
-  // }, []);
-
-  // if (messages) {
-  //   messages.sort((a, b) => {
-  //     return Number(b.createdAt) - Number(a.createdAt);
-  //   });
-  // }
+  const { chats, theme } = useGlobalContext();
 
   return (
     <>
       {chats.find((chat: Chat) => chat.chatId.includes(id)) ? (
         <>
-          <div className='relative flex flex-col flex-1 w-full border-t border-t-neutral-800 bg-[#343541] p-4 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch'>
+          <div
+            className={`relative flex flex-col flex-1 w-full border-t border-t-neutral-800 bg-[#343541] p-4 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch ${
+              theme === 'dark' ? 'bg-[#343541]' : 'bg-white'
+            }`}>
             {/* Messages */}
-            <Messages />
+            <Messages chatId={id} />
 
             {/* Input Message */}
-            <MessageInput id={id} />
+            <MessageInput chatId={id} />
           </div>
         </>
       ) : (

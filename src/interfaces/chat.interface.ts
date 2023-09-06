@@ -1,6 +1,6 @@
 export default interface Chat {
   chatId: string;
-  userId: string;
+  userId?: string;
   folderId?: string;
   title: string;
   modifiedAt: Date;

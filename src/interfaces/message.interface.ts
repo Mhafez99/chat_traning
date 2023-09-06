@@ -2,7 +2,7 @@ export default interface Message {
   messageId: string;
   text: string;
   isUserMessage: boolean;
-  chatId?: string;
+  chatId: string;
   userId?: string;
   answer?: string;
   createdAt?: Date;

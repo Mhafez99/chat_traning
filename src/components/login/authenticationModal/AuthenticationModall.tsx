@@ -9,9 +9,9 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { useRouter } from 'next/navigation';
 
 import { signIn } from 'next-auth/react';
-import { ToastContainer, toast } from 'react-toastify';
+import { Toaster, toast } from 'react-hot-toast';
 
-import { useForm } from 'react-hook-form';
+import { FieldValues, useForm } from 'react-hook-form';
 
 interface Props {
   authenticationType: string;
@@ -26,51 +26,27 @@ export default function AuthenticationModal({
   closeModal,
   setAuthenticationType,
 }: Props) {
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const [errors, setErrors] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    userName: '',
-  });
+  const [loading, setLoading] = useState(false);
 
-  const [authenticatingUser, setAuthenticatingUser] = useState({
-    email: '',
-    password: '',
-  });
-  const [registeringUser, setRegisteringUser] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    username: '',
-  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    getValues,
+  } = useForm();
 
   const goBack = () => {
     closeModal();
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (authenticationType === 'Sign In') {
-      setAuthenticatingUser({
-        ...authenticatingUser,
-        [name]: value,
-      });
-    } else if (authenticationType === 'Register') {
-      setRegisteringUser({
-        ...registeringUser,
-        [name]: value,
-      });
-    }
-  };
-  const logIn = async (e: FormEvent<HTMLFormElement>) => {
-    setIsLoading(true);
-
+  const logIn = async (data: FieldValues) => {
+    setLoading(true);
     try {
       const result = await signIn('credentials', {
-        email: authenticatingUser.email,
-        password: authenticatingUser.password,
+        email: data.email,
+        password: data.password,
         redirect: false,
       });
 
@@ -79,28 +55,23 @@ export default function AuthenticationModal({
         toast.success('Successful');
         setTimeout(() => {
           router.push('/chats');
-        }, 2000);
+        }, 1000);
+        reset();
       } else {
         throw new Error('failed');
       }
     } catch (error) {
-      toast.error('Error In Signin !');
+      toast.error('Email Or Password Is Not Valid');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const registeration = async (e: FormEvent<HTMLFormElement>) => {
-    setIsLoading(true);
-
-    if (registeringUser.password !== registeringUser.confirmPassword) {
-      setIsLoading(false);
-      return;
-    }
-
+  const registeration = async (data: FieldValues) => {
+    setLoading(true);
     try {
       // send user to backend
-      const user = registeringUser;
+      const user = data;
       const endpoint = '/api/registeration';
       const options = {
         method: 'POST',
@@ -110,31 +81,27 @@ export default function AuthenticationModal({
         body: JSON.stringify({ user }),
       };
       const response = await fetch(endpoint, options);
-      // Handle successful registration, display a toast or redirect
-      if (response?.ok) {
+      const userData = await response.json();
+      if (response?.status === 201) {
         toast.success('Success Registration');
-        const user = await response.json();
-        console.log('result is ', user);
         setAuthenticationType('Sign In');
-      } else if (response.status !== 201) {
-        toast.error('Invalid Registration ');
+        reset();
+      } else if (response.status === 409) {
+        toast.error(userData.message);
       }
     } catch (error) {
       toast.error('Error Notification !');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleSubmitForm = (
-    e: FormEvent<HTMLFormElement>,
-    authenticationType: string
-  ) => {
-    e.preventDefault();
+  const onSubmit = async (data: FieldValues) => {
+    console.log(data);
     if (authenticationType === 'Sign In') {
-      logIn(e);
+      logIn(data);
     } else if (authenticationType === 'Register') {
-      registeration(e);
+      registeration(data);
     }
   };
 
@@ -148,66 +115,100 @@ export default function AuthenticationModal({
       </button>
 
       <p className='py-4 text-4xl text-center'>{authenticationType}</p>
-      <form
-        onSubmit={(event: FormEvent<HTMLFormElement>) =>
-          handleSubmitForm(event, authenticationType)
-        }>
+      <form onSubmit={handleSubmit(onSubmit)}>
         {/* Registration/Sign In Form */}
         <div className='p-4'>
           <label className='p-2 text-sm font-bold ' htmlFor='email'>
             Email
           </label>
           <input
+            {...register('email', {
+              required: 'Email is required',
+              minLength: {
+                value: 5,
+                message: 'Email must be at least 5 characters',
+              },
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: 'Invalid email address',
+              },
+            })}
             className='mt-2 mb-4 mx-2 w-full border border-neutral-800 rounded-lg bg-[#40414F] px-4 py-2 shadow  focus:outline-none text-neutral-100 '
             type='email'
             id='email'
             name='email'
-            value={
-              authenticationType === 'Sign In'
-                ? authenticatingUser.email
-                : registeringUser.email
-            }
-            onChange={handleChange}
-            required
           />
+          {errors.email && (
+            <p className='text-red-500 ml-3'>{`${errors.email.message}`}</p>
+          )}
           <label className='p-2 text-sm font-bold '>Password</label>
           <input
+            {...register('password', {
+              required: {
+                value: true,
+                message: 'Password is reqiured !',
+              },
+              minLength: {
+                value: 8,
+                message: 'Password must be more than or equal 8 characters',
+              },
+              maxLength: {
+                value: 20,
+                message: 'Password cannot exceed more than 20 characters',
+              },
+              pattern: {
+                value: /^(?=.*[0-9])(?=.*[a-zA-Z])[0-9a-zA-Z@#$%^&*!]*$/,
+                message:
+                  ' Must include uppercase and lowercase letters , a number and  Optional For a special character',
+              },
+            })}
             className='mt-2 mb-4 mx-2 w-full border border-neutral-800 rounded-lg bg-[#40414F] px-4 py-2 shadow  focus:outline-none text-neutral-100 '
             type='password'
             id='password'
             name='password'
-            value={
-              authenticationType === 'Sign In'
-                ? authenticatingUser.password
-                : registeringUser.password
-            }
-            onChange={handleChange}
-            required
           />
+          {errors.password && (
+            <p className='text-red-500 ml-3'>{`${errors.password.message}`}</p>
+          )}
 
           {/* Register Inputs */}
           {authenticationType === 'Register' && (
             <>
               <label className='p-2 text-sm font-bold '>Confirm Password</label>
               <input
+                {...register('confirmPassword', {
+                  required: 'Confirm Password is required',
+                  validate: (value) =>
+                    value === getValues('password') || 'Password Must Match',
+                })}
                 className='mt-2 mb-4 mx-2 w-full border border-neutral-800 rounded-lg bg-[#40414F] px-4 py-2 shadow text-neutral-100 focus:outline-none'
                 type='password'
                 id='confirmPassword'
                 name='confirmPassword'
-                value={registeringUser.confirmPassword}
-                onChange={handleChange}
-                required
               />
+              {errors.confirmPassword && (
+                <p className='text-red-500 ml-3'>{`${errors.confirmPassword.message}`}</p>
+              )}
               <label className='p-2 text-sm font-bold '>Username</label>
               <input
+                {...register('username', {
+                  required: {
+                    value: true,
+                    message: 'Username is reqiured !',
+                  },
+                  minLength: {
+                    value: 3,
+                    message: 'Password must be more than or equal 3 characters',
+                  },
+                })}
                 className='mt-2 mb-4 mx-2 w-full border border-neutral-800 rounded-lg bg-[#40414F] px-4 py-2 shadow text-neutral-100 focus:outline-none'
                 type='text'
                 id='username'
                 name='username'
-                value={registeringUser.username}
-                onChange={handleChange}
-                required
               />
+              {errors.username && (
+                <p className='text-red-500 ml-3'>{`${errors.username.message}`}</p>
+              )}
             </>
           )}
         </div>
@@ -216,8 +217,8 @@ export default function AuthenticationModal({
         {authenticationType === 'Sign In' ? (
           <>
             <button
+              disabled={loading}
               type='submit'
-              disabled={isLoading}
               className='my-2 w-full rounded-lg border px-4 py-2 shadow focus:outline-none border-neutral-800 border-opacity-50 bg-white font-bold text-black hover:bg-neutral-200 disabled:bg-gray-500'>
               Sign In
             </button>
@@ -225,8 +226,8 @@ export default function AuthenticationModal({
         ) : (
           <>
             <button
+              disabled={loading}
               type='submit'
-              disabled={isLoading}
               className='my-2 w-full rounded-lg border px-4 py-2 shadow focus:outline-none border-neutral-800 border-opacity-50 bg-white font-bold text-black hover:bg-neutral-200 disabled:bg-gray-500'>
               Register
             </button>
@@ -244,15 +245,11 @@ export default function AuthenticationModal({
       </div>
 
       <div className='flex justify-center items-center gap-3 w-full'>
-        <button
-          disabled={isLoading}
-          className='flex flex-auto cursor-pointer select-none items-center gap-3 rounded-md bg-[#343541] py-3 px-3 text-[14px] leading-3 text-white transition-colors duration-200 hover:bg-gray-700'>
+        <button className='flex flex-auto cursor-pointer select-none items-center gap-3 rounded-md bg-[#343541] py-3 px-3 text-[14px] leading-3 text-white transition-colors duration-200 hover:bg-gray-700'>
           <GoogleIcon />
           <span>Google</span>
         </button>
-        <button
-          disabled={isLoading}
-          className='flex flex-auto cursor-pointer select-none items-center gap-3 rounded-md bg-[#343541] py-3 px-3 text-[14px] leading-3 text-white transition-colors duration-200 hover:bg-gray-700'>
+        <button className='flex flex-auto cursor-pointer select-none items-center gap-3 rounded-md bg-[#343541] py-3 px-3 text-[14px] leading-3 text-white transition-colors duration-200 hover:bg-gray-700'>
           <GitHubIcon />
           <span>Github</span>
         </button>
@@ -281,7 +278,7 @@ export default function AuthenticationModal({
           </p>
         </>
       )}
-      <ToastContainer position='top-center' />
+      <Toaster position='top-center' />
     </div>
   );
 }

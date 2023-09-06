@@ -13,6 +13,9 @@ import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import ChatIcon from '@mui/icons-material/Chat';
 import { useSidebarContext } from '@/services/context/SidebarContext';
+import { useSession } from 'next-auth/react';
+import { toast } from 'react-hot-toast';
+import { LoaderDelete } from '@/components/loading/LoadingMsg';
 
 interface Props {
   chat: Chat;
@@ -21,10 +24,12 @@ interface Props {
 export default function ChatComponent({ chat }: Props) {
   const { chats, setChats } = useGlobalContext();
   const { folders, setFolders } = useSidebarContext();
+  const [buttonDisabled, setIsButtonDisabled] = useState(false);
 
   const [title, setTitle] = useState('');
   const [deleteChatConfirm, setDeleteChatConfirm] = useState(false);
   const [openEditTitle, setOpenEditTitle] = useState(false);
+  const { data: session } = useSession();
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setTitle(e.target.value);
@@ -44,20 +49,49 @@ export default function ChatComponent({ chat }: Props) {
     setOpenEditTitle(false);
   }
 
-  function deleteChat(id: string) {
-    setChats(chats.filter((chat: Chat) => chat.chatId !== id));
+  const handleDeleteChat = async (id: string) => {
+    try {
+      setIsButtonDisabled(true);
 
-    const updatedFolders = folders.map((folder) => ({
-      ...folder,
-      chatIds: folder.chatIds.filter((chatId) => chatId !== id),
-    }));
-    setFolders(updatedFolders);
-  }
+      const accessToken = session?.user.accessToken;
+      if (!accessToken) {
+        console.error('User is not authenticated.');
+        return;
+      }
+      const response = await fetch('/api/removeChat', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ chatUUID: id }),
+      });
+      console.log(response);
+
+      const data = await response.json();
+
+      console.log(data);
+      if (response.status === 200) {
+        setChats(chats.filter((chat: Chat) => chat.chatId !== id));
+        const updatedFolders = folders.map((folder) => ({
+          ...folder,
+          chatIds: folder.chatIds.filter((chatId) => chatId !== id),
+        }));
+        setFolders(updatedFolders);
+        toast.success('Chat is Deleted Successfully');
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error('Failed to delete chat ');
+    } finally {
+      setIsButtonDisabled(false);
+    }
+  };
 
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>) => {
     event.dataTransfer.setData('text/plain', chat.chatId);
   };
-  console.log(chat);
 
   return (
     <>
@@ -102,26 +136,32 @@ export default function ChatComponent({ chat }: Props) {
           </>
         ) : (
           <>
-            <Link
-              href={`/chats/${chat.chatId}`}
-              className='flex items-center gap-3 w-full rounded-lg bg-[#343541]/90 p-3 cursor-pointer text-sm transition-colors duration-200 hover:bg-[#343541]/90'>
-              <ChatIcon />
-              <div className='relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3 pr-12'>
-                {chat.title}
-              </div>
-            </Link>
+            {buttonDisabled ? (
+              <LoaderDelete />
+            ) : (
+              <>
+                <Link
+                  href={`/chats/${chat.chatId}`}
+                  className='flex items-center gap-3 w-full rounded-lg bg-[#343541]/90 p-3 cursor-pointer text-sm transition-colors duration-200 hover:bg-[#343541]/90'>
+                  <ChatIcon />
+                  <div className='relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3 pr-12'>
+                    {chat.title}
+                  </div>
+                </Link>
+              </>
+            )}
 
-            {deleteChatConfirm ? (
+            {deleteChatConfirm && !buttonDisabled ? (
               <>
                 <div className='absolute right-1 z-10 flex text-gray-300'>
                   <button
-                    onClick={() => {
-                      deleteChat(chat.chatId);
-                    }}
+                    disabled={buttonDisabled}
+                    onClick={() => handleDeleteChat(chat.chatId)}
                     className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
                     <CheckIcon />
                   </button>
                   <button
+                    disabled={buttonDisabled}
                     onClick={() => setDeleteChatConfirm(!deleteChatConfirm)}
                     className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
                     <ClearIcon />
@@ -130,18 +170,22 @@ export default function ChatComponent({ chat }: Props) {
               </>
             ) : (
               <>
-                <div className='absolute right-1 z-10 flex text-gray-300'>
-                  <button
-                    onClick={() => setOpenEditTitle(!openEditTitle)}
-                    className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
-                    <EditIcon />
-                  </button>
-                  <button
-                    onClick={() => setDeleteChatConfirm(!deleteChatConfirm)}
-                    className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
-                    <DeleteIcon />
-                  </button>
-                </div>
+                {!buttonDisabled && (
+                  <>
+                    <div className='absolute right-1 z-10 flex text-gray-300'>
+                      <button
+                        onClick={() => setOpenEditTitle(!openEditTitle)}
+                        className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
+                        <EditIcon />
+                      </button>
+                      <button
+                        onClick={() => setDeleteChatConfirm(!deleteChatConfirm)}
+                        className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
+                        <DeleteIcon />
+                      </button>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </>

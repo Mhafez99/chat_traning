@@ -1,31 +1,32 @@
 import { NextResponse } from 'next/server';
 
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   try {
     const { method } = req;
-    if (method === 'POST') {
-      const { user } = await req.json();
+    if (method === 'GET') {
+      const token = req.headers.get('authorization') as string;
 
-      const endpoint = `http://localhost:9000/api/v1/auth/register`;
+      const endpoint = `http://localhost:9000/api/v1/chat`;
       const options = {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: token,
         },
-        body: JSON.stringify({ ...user }),
       };
 
       const res = await fetch(endpoint, options);
+
+      console.log(res);
+
       const data = await res.json();
       console.log(data);
 
-      if (res.status !== 201) {
+      if (res.status !== 200) {
         return NextResponse.json(data, { status: data.statusCode });
       }
 
-      return NextResponse.json({
-        message: `You has been registered successfully with the email: ${user.email}.`,
-      });
+      return NextResponse.json(data);
     }
   } catch (error) {
     console.log(error);
