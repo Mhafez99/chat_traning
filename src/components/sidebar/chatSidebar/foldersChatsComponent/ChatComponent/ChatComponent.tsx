@@ -15,7 +15,10 @@ import ChatIcon from '@mui/icons-material/Chat';
 import { useSidebarContext } from '@/services/context/SidebarContext';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { LoaderDelete } from '@/components/loading/LoadingMsg';
+import {
+  LoaderDelete,
+  LoaderDragAndDrop,
+} from '@/components/loading/LoadingMsg';
 
 interface Props {
   chat: Chat;
@@ -25,6 +28,8 @@ export default function ChatComponent({ chat }: Props) {
   const { chats, setChats } = useGlobalContext();
   const { folders, setFolders } = useSidebarContext();
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const [title, setTitle] = useState('');
   const [deleteChatConfirm, setDeleteChatConfirm] = useState(false);
@@ -75,7 +80,7 @@ export default function ChatComponent({ chat }: Props) {
         setChats(chats.filter((chat: Chat) => chat.chatId !== id));
         const updatedFolders = folders.map((folder) => ({
           ...folder,
-          chatIds: folder.chatIds.filter((chatId) => chatId !== id),
+          chats: folder.chats.filter((chat) => chat.chatId !== id),
         }));
         setFolders(updatedFolders);
         toast.success('Chat is Deleted Successfully');
@@ -90,7 +95,16 @@ export default function ChatComponent({ chat }: Props) {
   };
 
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>) => {
-    event.dataTransfer.setData('text/plain', chat.chatId);
+    setIsLoading(true);
+    const data = {
+      title: chat.title,
+      chatId: chat.chatId,
+    };
+    event.dataTransfer.setData('application/json', JSON.stringify(data));
+  };
+
+  const handleDragEnd = () => {
+    setIsLoading(false);
   };
 
   return (
@@ -98,7 +112,9 @@ export default function ChatComponent({ chat }: Props) {
       <div
         className='relative flex items-center'
         draggable
-        onDragStart={handleDragStart}>
+        onDragStart={handleDragStart}
+        onDragOver={(event) => event.preventDefault()}
+        onDragEnd={handleDragEnd}>
         {openEditTitle ? (
           <>
             <button
@@ -183,6 +199,7 @@ export default function ChatComponent({ chat }: Props) {
                         className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
                         <DeleteIcon />
                       </button>
+                      {isLoading && <LoaderDragAndDrop />}
                     </div>
                   </>
                 )}

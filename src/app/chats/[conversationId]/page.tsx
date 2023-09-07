@@ -5,6 +5,8 @@ import { useGlobalContext } from '@/services/context/GlobalContext';
 
 import Conversation from '@/components/conversation/Conversation';
 import ConversationsTab from '@/components/conversationsTab/ConversationsTab';
+import { useSidebarContext } from '@/services/context/SidebarContext';
+import Chat from '@/interfaces/chat.interface';
 
 export default function ConversationPage({
   params,
@@ -12,9 +14,29 @@ export default function ConversationPage({
   params: { conversationId: string };
 }) {
   const { chats, theme } = useGlobalContext();
-  console.log(params.conversationId);
+  const { folders } = useSidebarContext();
 
-  const chat = chats.find((chat) => chat.chatId === params.conversationId);
+  let chat;
+
+  chat = chats.find((chat) => chat.chatId === params.conversationId);
+
+  // console.log(chat);
+
+  // if (chat === undefined) {
+  //   folders.forEach((folder) => {
+  //     console.log(folder);
+
+  //     const folderChat = folder.chats.find(
+  //       (folderChat) => folderChat.chatId === params.conversationId
+  //     );
+  //     console.log(folderChat);
+
+  //     if (folderChat) {
+  //       chat = folderChat;
+  //       return; // Exit the loop if the chat is found
+  //     }
+  //   });
+  // }
 
   return (
     <main className='flex flex-1'>
@@ -22,8 +44,12 @@ export default function ConversationPage({
         className={`relative flex flex-col flex-1 overflow-hidden ${
           theme === 'dark' ? ' bg-[#343541]' : 'bg-white'
         }`}>
-        <ConversationsTab id={params.conversationId} chat={chat!} />
-        <Conversation id={params.conversationId} />
+        {chat && (
+          <>
+            <ConversationsTab id={params.conversationId} chat={chat!} />
+            <Conversation id={params.conversationId} />
+          </>
+        )}
       </div>
     </main>
   );

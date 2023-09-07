@@ -20,9 +20,11 @@ import { LoaderDelete } from '@/components/loading/LoadingMsg';
 
 interface Props {
   folder: Folder;
-  onDrop: (folderId: string, chatId: string) => void;
+  onDrop: (folderId: string, chatId: string, title: string) => void;
 }
-
+type ColorObject = {
+  hex: string;
+};
 export default function FolderComponent({ folder, onDrop }: Props) {
   const { chats, setChats } = useGlobalContext();
   const [title, setTitle] = useState('');
@@ -42,7 +44,9 @@ export default function FolderComponent({ folder, onDrop }: Props) {
       if (
         showColorPicker &&
         colorPickerRef.current &&
-        !colorPickerRef.current.contains(event.target as Node)
+        !(colorPickerRef.current as unknown as HTMLElement).contains(
+          event.target as Node
+        )
       ) {
         setShowColorPicker(false);
       }
@@ -108,10 +112,9 @@ export default function FolderComponent({ folder, onDrop }: Props) {
         );
         setFolders(updatedFolders);
         // Remove all chats inside the deleted folder
-        const chatsToRemove = folders.find(
-          (folder) => folder.folderId === id
-        )?.chatIds;
-        if (chatsToRemove) {
+        const deletedFolder = folders.find((folder) => folder.folderId === id);
+        if (deletedFolder) {
+          const chatsToRemove = deletedFolder.chats.map((chat) => chat.chatId);
           const updatedChats = chats.filter(
             (chat) => !chatsToRemove.includes(chat.chatId)
           );
@@ -134,15 +137,22 @@ export default function FolderComponent({ folder, onDrop }: Props) {
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const chatId = event.dataTransfer.getData('text/plain');
-    if (!folder.chatIds.includes(chatId)) {
+    const dataString = event.dataTransfer.getData('application/json');
+    const data = JSON.parse(dataString);
+    const { title, chatId } = data;
+
+    const chatExistsInFolder = folder.chats.some(
+      (chat) => chat.chatId === chatId
+    );
+
+    if (!chatExistsInFolder) {
       console.log(
         'Dropped chat with ID:',
         chatId,
         'into folder with ID:',
         folder.folderId
       );
-      onDrop(folder.folderId, chatId);
+      onDrop(folder.folderId, chatId, title);
     }
   };
 
@@ -150,7 +160,7 @@ export default function FolderComponent({ folder, onDrop }: Props) {
     setIsChatListOpen((prev) => !prev);
   }
 
-  const handleBackgroundColorChange = (color: string) => {
+  const handleBackgroundColorChange = (color: ColorObject) => {
     setCurrentColor(color.hex);
     const updatedFolders = folders.map((f) =>
       f.folderId === folder.folderId ? { ...f, backgroundColor: color.hex } : f
@@ -291,10 +301,10 @@ export default function FolderComponent({ folder, onDrop }: Props) {
       </div>
       {isChatListOpen && (
         <ul className='pl-3 border-l border-gray-300 mt-2'>
-          {folder.chatIds.map((chatId) => {
-            const chat = chats.find((c) => c.chatId === chatId);
+          {folder.chats.map((chat) => {
+            // const chat = chats.find((c) => c.chatId === chatId);
             return (
-              <li key={chatId} className='mb-1 text-center'>
+              <li key={chat.chatId} className='mb-1 text-center'>
                 {chat && <ChatComponent chat={chat} />}
               </li>
             );

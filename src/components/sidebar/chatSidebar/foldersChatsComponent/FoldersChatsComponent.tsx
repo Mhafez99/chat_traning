@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 import { useGlobalContext } from '@/services/context/GlobalContext';
 
@@ -16,12 +16,74 @@ import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 
 export default function FoldersChatsComponent() {
-  const { chats } = useGlobalContext();
+  const { chats, setChats } = useGlobalContext();
   const { search, filteredChats, folders, setFolders } = useSidebarContext();
   const { data: session } = useSession();
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
 
-  const handleDrop = async (folderId: string, chatId: string) => {
+  console.log(session?.user.accessToken);
+
+  const getChatsFolders = async () => {
+    try {
+      const accessToken = session?.user.accessToken;
+      if (!accessToken) {
+        console.error('User is not authenticated.');
+        return;
+      }
+      const response = await fetch('/api/getChatsAndFolders', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      console.log(response);
+
+      const data = await response.json();
+
+      console.log(data);
+
+      if (response.status === 200) {
+        const chatsWithoutFolder = data.filter(
+          (item: any) =>
+            item.folder.folderId === 'Untitled' ||
+            item.folder.title === 'Untitled'
+        );
+        const folders = data.filter(
+          (item: any) => item.folder.folderId !== 'Untitled'
+        );
+        if (folders) {
+          const allFoldersWithChatsAndWithoutChats: Folder[] = folders.map(
+            (folder: any) => {
+              return folder.folder;
+            }
+          );
+          console.log(allFoldersWithChatsAndWithoutChats);
+
+          setFolders(allFoldersWithChatsAndWithoutChats);
+        }
+        if (chatsWithoutFolder) {
+          const allChat = chatsWithoutFolder[0].folder.chats;
+          console.log(allChat);
+
+          setChats(allChat);
+        }
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error('Error Fetch Data');
+    }
+  };
+  useEffect(() => {
+    getChatsFolders();
+  }, [session?.user.accessToken]);
+
+  const handleDrop = async (
+    folderId: string,
+    chatId: string,
+    title: string
+  ) => {
     try {
       setIsButtonDisabled(true);
 
@@ -46,15 +108,20 @@ export default function FoldersChatsComponent() {
       if (response.status === 200) {
         const updatedFolders = folders.map((folder) => {
           if (folder.folderId === folderId) {
-            return {
-              ...folder,
-              chatIds: [...folder.chatIds, chatId],
-            };
-          } else if (folder.chatIds.includes(chatId)) {
+            const existingChat = folder.chats.find(
+              (chat) => chat.chatId === chatId
+            );
+            if (!existingChat) {
+              return {
+                ...folder,
+                chats: [...folder.chats, { title, chatId }],
+              };
+            }
+          } else if (folder.chats.some((chat) => chat.chatId === chatId)) {
             // Remove the chat from the source folder's chatIds
             return {
               ...folder,
-              chatIds: folder.chatIds.filter((id) => id !== chatId),
+              chats: folder.chats.filter((chat) => chat.chatId !== chatId),
             };
           }
           return folder;
@@ -72,8 +139,14 @@ export default function FoldersChatsComponent() {
   };
 
   const availableChats = chats.filter((chat) => {
-    return folders.every((folder) => !folder.chatIds.includes(chat.chatId));
+    return !folders.some((folder) =>
+      folder.chats.some((fChat) => fChat.chatId === chat.chatId)
+    );
   });
+
+  // const availableChats = chats.filter((chat) => {
+  //   return folders.every((folder) => !folder.chatIds.includes(chat.chatId));
+  // });
 
   return (
     <div className='flex-grow overflow-auto'>

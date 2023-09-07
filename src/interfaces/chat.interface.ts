@@ -1,9 +1,9 @@
 export default interface Chat {
   chatId: string;
+  title: string;
   userId?: string;
   folderId?: string;
-  title: string;
-  modifiedAt: Date;
-  createdAt: Date;
-  isDeleted: boolean;
+  modifiedAt?: Date;
+  createdAt?: Date;
+  isDeleted?: boolean;
 }

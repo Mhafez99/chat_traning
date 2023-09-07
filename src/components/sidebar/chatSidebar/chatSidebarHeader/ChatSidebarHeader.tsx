@@ -20,35 +20,46 @@ export default function ChatSidebarHeader() {
   const handleAddChat = async () => {
     try {
       setIsButtonDisabled(true);
-      let counter = chats.length + 1;
       const accessToken = session?.user.accessToken;
       if (!accessToken) {
         console.error('User is not authenticated.');
         return;
       }
+      console.log(chats.length);
+
+      let counter = chats.length + 1;
+      let newChatTitle = `new conversation ${counter}`;
+
+      console.log(newChatTitle);
+
+      while (
+        chats.some((chat) => chat.title === newChatTitle) ||
+        folders.some((folder) =>
+          folder.chats.some((chat) => chat.title === newChatTitle)
+        )
+      ) {
+        counter++;
+        newChatTitle = `new conversation ${counter}`;
+      }
+      console.log(newChatTitle);
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ title: `New Conversation ${counter}` }),
+        body: JSON.stringify({ title: newChatTitle }),
       });
-      console.log(response);
 
       const data = await response.json();
 
-      console.log(data);
       if (response.status === 200) {
         toast.success('Chat is Created Successfully');
         setChats((prevChats: Chat[]) => [
           ...prevChats,
           {
-            title: `New Conversation ${counter}`,
+            title: `new conversation ${counter}`,
             chatId: data.chatId,
-            modifiedAt: new Date(),
-            createdAt: new Date(),
-            isDeleted: false,
           },
         ]);
       } else {
@@ -91,9 +102,7 @@ export default function ChatSidebarHeader() {
           {
             folderId: data.folderID,
             title: `New Folder ${counter}`,
-            isDeleted: false,
-            createdAt: new Date(),
-            chatIds: [],
+            chats: [],
             backgroundColor: '',
           },
         ]);

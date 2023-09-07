@@ -81,8 +81,11 @@ export default function AuthenticationModal({
         body: JSON.stringify({ user }),
       };
       const response = await fetch(endpoint, options);
+      console.log(response);
+      
       const userData = await response.json();
-      if (response?.status === 201) {
+      console.log(response);
+      if (response?.status === 200) {
         toast.success('Success Registration');
         setAuthenticationType('Sign In');
         reset();

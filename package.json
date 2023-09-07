@@ -47,5 +47,8 @@
     "typescript": "5.1.6",
     "typewriter-effect": "^2.20.1",
     "zod": "^3.22.2"
+  },
+  "devDependencies": {
+    "@types/react-color": "^3.0.6"
   }
 }

@@ -1,11 +1,13 @@
-
 export default interface Folder {
-  folderId: string;
   title: string;
-  createdAt: Date;
-  isDeleted: boolean;
-  chatIds: string[];
-  backgroundColor: string;
+  folderId: string;
+  chats: {
+    title: string;
+    chatId: string;
+  }[];
+  createdAt?: Date;
+  isDeleted?: boolean;
+  backgroundColor?: string;
   userId?: string;
   type?: string;
 }

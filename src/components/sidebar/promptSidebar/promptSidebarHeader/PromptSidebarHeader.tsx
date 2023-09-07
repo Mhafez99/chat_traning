@@ -38,7 +38,7 @@ export default function PromptSidebarHeader() {
         title: `New Folder ${counter}`,
         items: [],
         createdAt: new Date(),
-        chatIds: [],
+        chats: [],
         backgroundColor: '',
       },
     ]);
