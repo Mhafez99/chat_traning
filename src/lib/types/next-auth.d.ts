@@ -5,6 +5,7 @@ declare module 'next-auth' {
     user: {
       accessToken: string;
       refreshToken: string;
+      accessExpiryDate: number;
       userData: {
         Email: string;
         Username: string;

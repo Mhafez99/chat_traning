@@ -11,7 +11,7 @@ export async function POST(req: Request) {
       const token = req.headers.get('authorization') as string;
       console.log(token);
 
-      const endpoint = `http://localhost:9000/api/v1/chat/NewFolder`;
+      const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/chat/NewFolder`;
       const options = {
         method: 'POST',
         headers: {

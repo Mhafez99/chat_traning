@@ -14,17 +14,22 @@ import NoData from '../../components/noData/NoData';
 import { useSidebarContext } from '@/services/context/SidebarContext';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
+import { LoaderFoldersAndChats } from '@/components/loading/LoadingMsg';
+import { useRefreshToken } from '@/lib/hooks/useRefreshToken';
 
 export default function FoldersChatsComponent() {
-  const { chats, setChats } = useGlobalContext();
-  const { search, filteredChats, folders, setFolders } = useSidebarContext();
+  const { chats, setChats, folders, setFolders } = useGlobalContext();
+  const { search, filteredChats } = useSidebarContext();
   const { data: session } = useSession();
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
+  const [loadingChatAndFolders, setloadingChatAndFolders] = useState(false);
+  const refreshToken = useRefreshToken();
 
-  console.log(session?.user.accessToken);
+  console.log('RefreshTokenIs', session?.user.refreshToken);
 
   const getChatsFolders = async () => {
     try {
+      setloadingChatAndFolders(true);
       const accessToken = session?.user.accessToken;
       if (!accessToken) {
         console.error('User is not authenticated.');
@@ -37,17 +42,12 @@ export default function FoldersChatsComponent() {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log(response);
 
       const data = await response.json();
 
-      console.log(data);
-
       if (response.status === 200) {
         const chatsWithoutFolder = data.filter(
-          (item: any) =>
-            item.folder.folderId === 'Untitled' ||
-            item.folder.title === 'Untitled'
+          (item: any) => item.folder.folderId === 'Untitled'
         );
         const folders = data.filter(
           (item: any) => item.folder.folderId !== 'Untitled'
@@ -68,11 +68,15 @@ export default function FoldersChatsComponent() {
 
           setChats(allChat);
         }
+      } else if (response.status === 401) {
+        await refreshToken();
       } else {
         toast.error(data.message);
       }
     } catch (error) {
       console.error('Error Fetch Data');
+    } finally {
+      setloadingChatAndFolders(false);
     }
   };
   useEffect(() => {
@@ -149,54 +153,60 @@ export default function FoldersChatsComponent() {
   // });
 
   return (
-    <div className='flex-grow overflow-auto'>
-      {chats.length > 0 || folders.length > 0 ? (
+    <div className='flex-grow overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch'>
+      {loadingChatAndFolders ? (
+        <LoaderFoldersAndChats />
+      ) : (
         <>
-          {/* Folders */}
-          <div className='flex border-b border-white/20 pb-2'>
-            <div className='flex flex-col w-full pt-2'>
-              {folders.map((folder: Folder) => (
-                <div key={folder.folderId}>
-                  <FolderComponent folder={folder} onDrop={handleDrop} />
+          {chats.length > 0 || folders.length > 0 ? (
+            <>
+              {/* Folders */}
+              <div className='flex border-b border-white/20 pb-2'>
+                <div className='flex flex-col w-full pt-2'>
+                  {folders.map((folder: Folder) => (
+                    <div key={folder.folderId}>
+                      <FolderComponent folder={folder} onDrop={handleDrop} />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          {/* Conversation */}
-          <div className='pt-2'>
-            <div className='flex flex-col gap-1 w-full'>
-              {search ? (
-                <>
-                  {filteredChats.length > 0 ? (
+              {/* Conversation */}
+              <div className='pt-2'>
+                <div className='flex flex-col gap-1 w-full'>
+                  {search ? (
                     <>
-                      {filteredChats.map((chat: Chat) => (
+                      {filteredChats.length > 0 ? (
+                        <>
+                          {filteredChats.map((chat: Chat) => (
+                            <div key={chat.chatId}>
+                              <ChatComponent chat={chat} />
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <>
+                          <NoData />
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {availableChats.map((chat: Chat) => (
                         <div key={chat.chatId}>
                           <ChatComponent chat={chat} />
                         </div>
                       ))}
                     </>
-                  ) : (
-                    <>
-                      <NoData />
-                    </>
                   )}
-                </>
-              ) : (
-                <>
-                  {availableChats.map((chat: Chat) => (
-                    <div key={chat.chatId}>
-                      <ChatComponent chat={chat} />
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <NoData />
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <NoData />
+            </>
+          )}
         </>
       )}
     </div>

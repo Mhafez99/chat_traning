@@ -1,6 +1,3 @@
-'use client';
-
-import { useEffect } from 'react';
 import Link from 'next/link';
 import { useGlobalContext } from '@/services/context/GlobalContext';
 import Chat from '@/interfaces/chat.interface';
@@ -13,11 +10,28 @@ interface Props {
 }
 
 export default function Conversation({ id }: Props) {
-  const { chats, theme } = useGlobalContext();
+  const { chats, theme, folders } = useGlobalContext();
+
+  let chat;
+
+  chat = chats.find((chat: Chat) => chat.chatId.includes(id));
+
+  if (!chat) {
+    folders.some((folder) => {
+      const folderChat = folder.chats.find(
+        (folderChat) => folderChat.chatId === id
+      );
+      if (folderChat) {
+        chat = folderChat;
+        return true;
+      }
+      return false;
+    });
+  }
 
   return (
     <>
-      {chats.find((chat: Chat) => chat.chatId.includes(id)) ? (
+      {chat ? (
         <>
           <div
             className={`relative flex flex-col flex-1 w-full border-t border-t-neutral-800 bg-[#343541] p-4 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch ${

@@ -12,7 +12,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import ChatIcon from '@mui/icons-material/Chat';
-import { useSidebarContext } from '@/services/context/SidebarContext';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import {
@@ -25,8 +24,8 @@ interface Props {
 }
 
 export default function ChatComponent({ chat }: Props) {
-  const { chats, setChats } = useGlobalContext();
-  const { folders, setFolders } = useSidebarContext();
+  const { chats, setChats, folders, setFolders } = useGlobalContext();
+
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -160,7 +159,7 @@ export default function ChatComponent({ chat }: Props) {
                   href={`/chats/${chat.chatId}`}
                   className='flex items-center gap-3 w-full rounded-lg bg-[#343541]/90 p-3 cursor-pointer text-sm transition-colors duration-200 hover:bg-[#343541]/90'>
                   <ChatIcon />
-                  <div className='relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3 pr-12'>
+                  <div className='relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3 pr-12 first-letter:uppercase'>
                     {chat.title}
                   </div>
                 </Link>

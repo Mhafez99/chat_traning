@@ -13,30 +13,24 @@ export default function ConversationPage({
 }: {
   params: { conversationId: string };
 }) {
-  const { chats, theme } = useGlobalContext();
-  const { folders } = useSidebarContext();
+  const { chats, theme, folders } = useGlobalContext();
 
   let chat;
 
   chat = chats.find((chat) => chat.chatId === params.conversationId);
 
-  // console.log(chat);
-
-  // if (chat === undefined) {
-  //   folders.forEach((folder) => {
-  //     console.log(folder);
-
-  //     const folderChat = folder.chats.find(
-  //       (folderChat) => folderChat.chatId === params.conversationId
-  //     );
-  //     console.log(folderChat);
-
-  //     if (folderChat) {
-  //       chat = folderChat;
-  //       return; // Exit the loop if the chat is found
-  //     }
-  //   });
-  // }
+  if (!chat) {
+    folders.some((folder) => {
+      const folderChat = folder.chats.find(
+        (folderChat) => folderChat.chatId === params.conversationId
+      );
+      if (folderChat) {
+        chat = folderChat;
+        return true;
+      }
+      return false;
+    });
+  }
 
   return (
     <main className='flex flex-1'>
@@ -46,7 +40,7 @@ export default function ConversationPage({
         }`}>
         {chat && (
           <>
-            <ConversationsTab id={params.conversationId} chat={chat!} />
+            <ConversationsTab chat={chat!} />
             <Conversation id={params.conversationId} />
           </>
         )}

@@ -1,4 +1,4 @@
-"use client"
+'use client';
 import { useEffect } from 'react';
 import Link from 'next/link';
 
@@ -11,20 +11,18 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useRouter } from 'next/navigation';
 import { ChatTab } from '@/interfaces/chatTab.interface';
 
-
 interface Props {
-  id: string;
   chat: Chat;
 }
 
-export default function ConversationsTab({ id, chat }: Props) {
+export default function ConversationsTab({ chat }: Props) {
   const { chatTabs, setChatTabs, theme } = useGlobalContext();
   const router = useRouter();
 
   useEffect(() => {
-    if (!chatTabs.find((chatTab) => chatTab.id === chat?.chatId))
-      setChatTabs([...chatTabs, { id: chat!.chatId, title: chat!.title }]);
-  }, [id]);
+    if (!chatTabs.find((chatTab) => chatTab.id === chat.chatId))
+      setChatTabs([...chatTabs, { id: chat.chatId, title: chat.title }]);
+  }, [chat]);
 
   const handleClick = (id: string) => {
     setChatTabs((prevState: ChatTab[]) => {

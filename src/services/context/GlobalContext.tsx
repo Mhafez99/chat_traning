@@ -13,12 +13,15 @@ import { ChatTab } from '@/interfaces/chatTab.interface';
 import PromptModal from '@/interfaces/promptModal.interface';
 import Message from '@/interfaces/message.interface';
 import { DummyUser } from '@/dummyData/dummyUser';
+import Folder from '@/interfaces/folder.interface';
 
 interface StateContext {
   user: User | undefined;
   setUser: any;
   chats: Chat[];
   setChats: any;
+  folders: Folder[];
+  setFolders: any;
   prompts: Prompt[];
   setPrompts: any;
   isSettingsModalOpen: boolean;
@@ -50,6 +53,8 @@ const initialState = {
   setUser: (user: User) => {},
   chats: [],
   setChats: (chats: Chat[]) => {},
+  folders: [],
+  setFolders: (folders: Folder[]) => {},
   prompts: [],
   setPrompts: (prompts: Prompt[]) => {},
   isSettingsModalOpen: false,
@@ -88,6 +93,8 @@ export default function GlobalContext({ children }: Props) {
   const [theme, setTheme] = useState('dark');
   const [user, setUser] = useState<User | undefined>(DummyUser);
   const [chats, setChats] = useState<Chat[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
+
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [chatTabs, setChatTabs] = useState<ChatTab[]>([]);
 
@@ -157,6 +164,8 @@ export default function GlobalContext({ children }: Props) {
         setUser,
         chats,
         setChats,
+        folders,
+        setFolders,
         prompts,
         setPrompts,
         isSettingsModalOpen,

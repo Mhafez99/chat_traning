@@ -52,10 +52,7 @@ export default function AuthenticationModal({
 
       if (!result?.error) {
         setIsAuthenticationModalOpen(false);
-        toast.success('Successful');
-        setTimeout(() => {
-          router.push('/chats');
-        }, 1000);
+        router.push('/chats');
         reset();
       } else {
         throw new Error('failed');
@@ -82,7 +79,7 @@ export default function AuthenticationModal({
       };
       const response = await fetch(endpoint, options);
       console.log(response);
-      
+
       const userData = await response.json();
       console.log(response);
       if (response?.status === 200) {
@@ -93,7 +90,7 @@ export default function AuthenticationModal({
         toast.error(userData.message);
       }
     } catch (error) {
-      toast.error('Error Notification !');
+      toast.error('Server Error!');
     } finally {
       setLoading(false);
     }

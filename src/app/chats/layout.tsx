@@ -16,7 +16,7 @@ export default async function MainLayout({
           <div className='flex h-full w-full sm:pt-0'>
             <ChatSidebar />
             {children}
-            <PromptSideBar />
+            {/* <PromptSideBar /> */}
           </div>
         </main>
       )}

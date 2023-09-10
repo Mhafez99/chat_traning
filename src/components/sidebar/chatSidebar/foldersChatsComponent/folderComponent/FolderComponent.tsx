@@ -10,13 +10,15 @@ import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useGlobalContext } from '@/services/context/GlobalContext';
 import ChatComponent from '../ChatComponent/ChatComponent';
-import { useSidebarContext } from '@/services/context/SidebarContext';
-import { BlockPicker, TwitterPicker } from 'react-color';
+import { BlockPicker } from 'react-color';
 
 import { IconCaretDown, IconCaretRight } from '@tabler/icons-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { LoaderDelete } from '@/components/loading/LoadingMsg';
+import {
+  LoaderDelete,
+  LoaderDragAndDrop,
+} from '@/components/loading/LoadingMsg';
 
 interface Props {
   folder: Folder;
@@ -26,17 +28,17 @@ type ColorObject = {
   hex: string;
 };
 export default function FolderComponent({ folder, onDrop }: Props) {
-  const { chats, setChats } = useGlobalContext();
+  const { chats, setChats, folders, setFolders } = useGlobalContext();
   const [title, setTitle] = useState('');
   const [editTitle, setEditTitle] = useState(false);
   const [deleteFolderConfirm, setDeleteFolderConfirm] = useState(false);
   const [isChatListOpen, setIsChatListOpen] = useState(false);
-  const { folders, setFolders } = useSidebarContext();
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [currentColor, setCurrentColor] = useState(folder.backgroundColor);
   const colorPickerRef = useRef(null);
   const [textColorClass, setTextColorClass] = useState('white');
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
+  const [isDropStart, setIsDropStart] = useState(false);
   const { data: session } = useSession();
 
   useEffect(() => {
@@ -137,13 +139,17 @@ export default function FolderComponent({ folder, onDrop }: Props) {
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
+    setIsDropStart(true);
     const dataString = event.dataTransfer.getData('application/json');
     const data = JSON.parse(dataString);
     const { title, chatId } = data;
+    const sourceFolderId = event.dataTransfer.getData('sourceFolderId');
 
     const chatExistsInFolder = folder.chats.some(
       (chat) => chat.chatId === chatId
     );
+
+    console.log(chatExistsInFolder);
 
     if (!chatExistsInFolder) {
       console.log(
@@ -154,6 +160,7 @@ export default function FolderComponent({ folder, onDrop }: Props) {
       );
       onDrop(folder.folderId, chatId, title);
     }
+    setIsDropStart(false);
   };
 
   function toggleChatList() {
@@ -291,6 +298,7 @@ export default function FolderComponent({ folder, onDrop }: Props) {
                         className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
                         <DeleteIcon />
                       </button>
+                      {isDropStart && <LoaderDragAndDrop />}
                     </div>
                   </>
                 )}

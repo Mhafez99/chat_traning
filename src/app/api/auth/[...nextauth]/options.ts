@@ -14,7 +14,7 @@ export const options: NextAuthOptions = {
         };
         try {
           const response = await fetch(
-            'http://localhost:9000/api/v1/auth/login',
+            `${process.env.BACKEND_API_ROUTE}/api/v1/auth/login`,
             {
               method: 'POST',
               headers: {
@@ -33,6 +33,8 @@ export const options: NextAuthOptions = {
           }
 
           const user = await response.json();
+
+          console.log(user);
 
           if (user.statusCode === 401) {
             throw new Error('Authentication failed: ' + user.message);

@@ -9,6 +9,9 @@ import TableComponent from './message/TableComponent';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 import { solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { toast } from 'react-hot-toast';
+import UserAvatar from '@/components/avatars/UserAvatar';
+import BotAvatar from '@/components/avatars/BotAvatar';
 
 interface Props {
   chatId: string;
@@ -54,6 +57,7 @@ export default function Messages({ chatId }: Props) {
                         className='bg-blue-500 hover:bg-blue-700 text-white text-sm px-2 py-1 rounded-md mt-2'
                         onClick={() => {
                           navigator.clipboard.writeText(children as string);
+                          toast.success('Copied');
                         }}>
                         Copy Code
                       </button>
@@ -104,11 +108,12 @@ export default function Messages({ chatId }: Props) {
                   message.isUserMessage && 'justify-end'
                 }`}>
                 <div
-                  className={`flex flex-col space-y-2 text-sm max-w-2xl mx-2 overflow-x-hidden${
+                  className={`flex space-y-2 text-sm max-w-2xl mx-2 overflow-x-hidden${
                     message.isUserMessage
                       ? 'order-1 items-end'
                       : 'order-2 items-start'
                   }`}>
+                    {/* {message.isUserMessage ? <UserAvatar /> : <BotAvatar />} */}
                   <p
                     className={` ${
                       message.isUserMessage ? 'text-white' : 'text-gray-900'

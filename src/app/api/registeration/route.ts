@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     if (method === 'POST') {
       const { user } = await req.json();
 
-      const endpoint = `http://localhost:9000/api/v1/auth/register`;
+      const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/auth/register`;
       const options = {
         method: 'POST',
         headers: {

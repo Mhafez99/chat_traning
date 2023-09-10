@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 
-import Folder from "@/interfaces/folder.interface";
+import Folder from '@/interfaces/folder.interface';
 
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CheckIcon from "@mui/icons-material/Check";
-import ClearIcon from "@mui/icons-material/Clear";
-import { useSidebarContext } from "@/services/context/SidebarContext";
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CheckIcon from '@mui/icons-material/Check';
+import ClearIcon from '@mui/icons-material/Clear';
+
+import { useGlobalContext } from '@/services/context/GlobalContext';
 
 interface Props {
   folder: Folder;
@@ -19,16 +20,16 @@ export default function FolderComponent({ folder }: Props) {
   const [title, setTitle] = useState(folder.title);
   const [editTitle, setEditTitle] = useState(false);
   const [deleteFolderConfirm, setDeleteFolderConfirm] = useState(false);
-  const { folders, setFolders } = useSidebarContext();
+  const { folders, setFolders } = useGlobalContext();
 
-const handleChange = (
-  event: React.ChangeEvent<HTMLInputElement>,
-  folderId: number
-) => {
-  setTitle(event.target.value);
-};
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    folderId: number
+  ) => {
+    setTitle(event.target.value);
+  };
 
-  function editFolderName(e: any, id: number) {
+  function editFolderName(e: any, id: string) {
     e.preventDefault();
     setFolders(
       folders.map((folder: Folder) => {
@@ -42,8 +43,10 @@ const handleChange = (
     setEditTitle(false);
   }
 
-  function deleteFolder(id: number) {
-    setFolders(folders.filter((folder: Folder) => folder.folderId !== String(id)));
+  function deleteFolder(id: string) {
+    setFolders(
+      folders.filter((folder: Folder) => folder.folderId !== String(id))
+    );
   }
 
   return (
@@ -82,10 +85,10 @@ const handleChange = (
           </>
         ) : (
           <>
-            <button className='flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-sm transition-colors duration-200 hover:bg-[#343541]/90'>
+            <button className='flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-sm transition-colors duration-200 hover:bg-[#343541]/90 '>
               <PlayArrowIcon />
-              <div className='relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3'>
-                {folder.title}
+              <div className='relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3 pr-12 uppercase'>
+                {folder.title.length > 20 && folder.title.slice(0, 20)}
               </div>
             </button>
 

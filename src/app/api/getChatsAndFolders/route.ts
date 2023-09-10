@@ -6,7 +6,7 @@ export async function GET(req: Request) {
     if (method === 'GET') {
       const token = req.headers.get('authorization') as string;
 
-      const endpoint = `http://localhost:9000/api/v1/chat`;
+      const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/chat`;
       const options = {
         method: 'GET',
         headers: {

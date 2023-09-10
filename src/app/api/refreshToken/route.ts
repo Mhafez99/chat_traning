@@ -4,29 +4,23 @@ export async function POST(req: Request) {
   try {
     const { method } = req;
     if (method === 'POST') {
-      const { chatUUID, folderUUID } = await req.json();
+      const refreshToken = await req.json();
 
-      console.log(chatUUID, folderUUID);
+      console.log(JSON.stringify({ refreshToken: refreshToken }));
 
-      const token = req.headers.get('authorization') as string;
-
-      const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/chat/ChatToFolder`;
+      const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/auth/refresh`;
       const options = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: token,
         },
-        body: JSON.stringify({ chatUUID, folderUUID }),
+        body: JSON.stringify({ refreshToken: refreshToken }),
       };
 
       const res = await fetch(endpoint, options);
 
-      console.log(res);
-
       const data = await res.json();
-      console.log(data);
-
+ 
       if (res.status !== 200) {
         return NextResponse.json(data, { status: data.statusCode });
       }

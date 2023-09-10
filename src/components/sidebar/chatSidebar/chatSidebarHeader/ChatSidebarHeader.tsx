@@ -12,8 +12,8 @@ import { useState } from 'react';
 import { Loader } from '@/components/loading/LoadingMsg';
 
 export default function ChatSidebarHeader() {
-  const { user, chats, setChats } = useGlobalContext();
-  const { folders, setFolders } = useSidebarContext();
+  const { user, chats, setChats, folders, setFolders } = useGlobalContext();
+
   const { data: session } = useSession();
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
@@ -52,6 +52,7 @@ export default function ChatSidebarHeader() {
       });
 
       const data = await response.json();
+      console.log(data);
 
       if (response.status === 200) {
         toast.success('Chat is Created Successfully');
@@ -75,19 +76,29 @@ export default function ChatSidebarHeader() {
   const hadleAddFolder = async () => {
     try {
       setIsButtonDisabled(true);
-      let counter = folders.length + 1;
       const accessToken = session?.user.accessToken;
       if (!accessToken) {
         console.error('User is not authenticated.');
         return;
       }
+
+      let counter = folders.length + 1;
+      let newFolderTitle = `new folder ${counter}`;
+
+      console.log(newFolderTitle);
+
+      while (folders.some((folder) => folder.title === newFolderTitle)) {
+        counter++;
+        newFolderTitle = `new folder ${counter}`;
+      }
+
       const response = await fetch('/api/folder', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ title: `New Folder ${counter}` }),
+        body: JSON.stringify({ title: newFolderTitle }),
       });
       console.log(response);
 

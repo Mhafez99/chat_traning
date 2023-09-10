@@ -4,27 +4,30 @@ export async function DELETE(req: Request) {
   try {
     const { method } = req;
     if (method === 'DELETE') {
-      const refreshToken = await req.json();
+      const token = req.headers.get('authorization') as string;
 
-      console.log(refreshToken);
-
-      const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/auth/logout`;
+      const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/chat/RemoveAllChats`;
       const options = {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: token,
         },
-        body: JSON.stringify(refreshToken),
       };
+
       const res = await fetch(endpoint, options);
+      console.log(res);
+
+      const data = await res.json();
+      console.log(data);
 
       if (res.status !== 200) {
-        return NextResponse.json({ status: res.status });
+        return NextResponse.json(data, { status: data.statusCode });
       }
 
-      return NextResponse.json(res.status);
+      return NextResponse.json(data);
     }
   } catch (error) {
-    return new Response('An error occurred', { status: 500 });
+    console.log(error);
   }
 }

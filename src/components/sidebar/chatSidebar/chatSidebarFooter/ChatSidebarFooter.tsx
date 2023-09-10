@@ -12,10 +12,13 @@ import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import Swal from 'sweetalert2';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useSidebarContext } from '@/services/context/SidebarContext';
 export default function ChatSidebarFooter() {
-  const { user, setUser, chats, setChats, setIsSettingsModalOpen } =
+  const { user, setUser, chats, setChats, setIsSettingsModalOpen, setFolders } =
     useGlobalContext();
+
   const { data: session } = useSession();
+
   const router = useRouter();
   const handleDeleteClick = () => {
     Swal.fire({
@@ -26,31 +29,68 @@ export default function ChatSidebarFooter() {
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
       confirmButtonText: 'Yes, delete it!',
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        setChats([]);
-        // Call the API or perform any other necessary action here
-        Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
+        try {
+          const accessToken = session?.user.accessToken;
+          if (!accessToken) {
+            console.error('User is not authenticated.');
+            return;
+          }
+          const response = await fetch('/api/removeAllChats', {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+
+          const data = await response.json();
+
+          if (response.status === 200) {
+            setChats([]);
+            Swal.fire('Deleted!', 'Your Chats has been deleted.', 'success');
+          } else {
+            Swal.fire(
+              'Same Error In Server',
+              'Sorry Error in deleting Chats',
+              'error'
+            );
+          }
+        } catch (error) {
+          console.error('Failed to delete chats ');
+        }
       }
     });
   };
 
   const handleLogout = async () => {
-    const endpoint = '/api/logout';
-    const options = {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refreshToken: session?.user.refreshToken }),
-    };
-    // const response = await fetch(endpoint, options);
-    // const results = await response.json();
+    try {
+      const endpoint = '/api/logout';
+      const options = {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken: session?.user.refreshToken }),
+      };
 
-    await signOut({
-      redirect: false,
-    });
-    router.replace('/');
+      const response = await fetch(endpoint, options);
+
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+
+      await signOut({
+        redirect: false,
+      });
+
+      setChats([]);
+      setFolders([]);
+      router.replace('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (

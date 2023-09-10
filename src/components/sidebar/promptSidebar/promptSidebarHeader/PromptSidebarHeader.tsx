@@ -5,14 +5,13 @@ import Prompt from '@/interfaces/prompt.interface';
 
 import AddIcon from '@mui/icons-material/Add';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
-import { useSidebarContext } from '@/services/context/SidebarContext';
+
 import { useSession } from 'next-auth/react';
 
 export default function PromptSidebarHeader() {
-  const { folders, setFolders } = useSidebarContext();
   const { data: session } = useSession();
 
-  const { user, prompts, setPrompts } = useGlobalContext();
+  const { user, prompts, setPrompts, folders, setFolders } = useGlobalContext();
 
   function addMainComponent() {
     let counter = prompts.length + 1;
