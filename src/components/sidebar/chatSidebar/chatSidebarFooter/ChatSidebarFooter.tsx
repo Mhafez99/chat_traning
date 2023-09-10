@@ -23,6 +23,7 @@ export default function ChatSidebarFooter() {
     setIsSettingsModalOpen,
     setFolders,
     folders,
+    setChatTabs,
   } = useGlobalContext();
 
   const { data: session } = useSession();
@@ -62,6 +63,7 @@ export default function ChatSidebarFooter() {
               chats: [],
             }));
             setFolders(updatedFolders);
+            setChatTabs([]);
             Swal.fire('Deleted!', 'Your Chats has been deleted.', 'success');
           } else {
             Swal.fire(

@@ -44,12 +44,11 @@ interface Props {
 }
 
 export default function SidebarContext({ children }: Props) {
-  const { chats, prompts } = useGlobalContext();
+  const { chats, prompts, folders } = useGlobalContext();
   const [search, setSearch] = useState('');
   const [filteredFolders, setFilteredFolders] = useState<Folder[]>([]);
   const [filteredChats, setFilteredChats] = useState<Chat[]>([]);
   const [filteredPrompts, setFilteredPrompts] = useState<Prompt[]>([]);
-
 
   const onSearch = (
     e: ChangeEvent<HTMLInputElement>,

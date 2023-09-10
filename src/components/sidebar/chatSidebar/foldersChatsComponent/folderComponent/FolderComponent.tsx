@@ -243,7 +243,7 @@ export default function FolderComponent({ folder, onDrop }: Props) {
                   )}
 
                   <div
-                    className={`relative max-h-5 flex-1 overflow-hidden text-red whitespace-nowrap break-all text-left text-[12.5px] leading-3 text-${textColorClass}`}>
+                    className={`relative max-h-5 flex-1 overflow-hidden text-red whitespace-nowrap break-all text-left text-[12.5px] leading-2 text-${textColorClass}`}>
                     {folder.title}
                   </div>
                 </button>
