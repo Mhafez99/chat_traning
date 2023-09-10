@@ -18,6 +18,7 @@ import {
   LoaderDelete,
   LoaderDragAndDrop,
 } from '@/components/loading/LoadingMsg';
+import { ChatTab } from '@/interfaces/chatTab.interface';
 
 interface Props {
   chat: Chat;
@@ -25,7 +26,8 @@ interface Props {
 }
 
 export default function ChatComponent({ chat, folderId }: Props) {
-  const { chats, setChats, folders, setFolders } = useGlobalContext();
+  const { chats, setChats, folders, setFolders, setChatTabs, chatTabs } =
+    useGlobalContext();
 
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
 
@@ -97,6 +99,7 @@ export default function ChatComponent({ chat, folderId }: Props) {
       console.log(data);
       if (response.status === 200) {
         setChats(chats.filter((chat: Chat) => chat.chatId !== id));
+        setChatTabs(chatTabs.filter((chatTab: ChatTab) => chatTab.id !== id));
         const updatedFolders = folders.map((folder) => ({
           ...folder,
           chats: folder.chats.filter((chat) => chat.chatId !== id),
