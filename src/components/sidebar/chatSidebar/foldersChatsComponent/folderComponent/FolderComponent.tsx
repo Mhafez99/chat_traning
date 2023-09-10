@@ -72,7 +72,10 @@ export default function FolderComponent({ folder, onDrop }: Props) {
   }
 
   function editFolderName(e: any, id: string) {
-    // e.preventDefault();
+    if (title.trim() === '') {
+      toast.error('Folder name cannot be empty');
+      return;
+    }
 
     setFolders(
       folders.map((folder: Folder) => {
@@ -313,7 +316,9 @@ export default function FolderComponent({ folder, onDrop }: Props) {
             // const chat = chats.find((c) => c.chatId === chatId);
             return (
               <li key={chat.chatId} className='mb-1 text-center'>
-                {chat && <ChatComponent chat={chat} />}
+                {chat && (
+                  <ChatComponent chat={chat} folderId={folder.folderId} />
+                )}
               </li>
             );
           })}

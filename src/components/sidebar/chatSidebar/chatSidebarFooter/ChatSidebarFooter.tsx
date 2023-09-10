@@ -13,9 +13,17 @@ import Swal from 'sweetalert2';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useSidebarContext } from '@/services/context/SidebarContext';
+import { toast } from 'react-hot-toast';
 export default function ChatSidebarFooter() {
-  const { user, setUser, chats, setChats, setIsSettingsModalOpen, setFolders } =
-    useGlobalContext();
+  const {
+    user,
+    setUser,
+    chats,
+    setChats,
+    setIsSettingsModalOpen,
+    setFolders,
+    folders,
+  } = useGlobalContext();
 
   const { data: session } = useSession();
 
@@ -49,6 +57,11 @@ export default function ChatSidebarFooter() {
 
           if (response.status === 200) {
             setChats([]);
+            const updatedFolders = folders.map((folder) => ({
+              ...folder,
+              chats: [],
+            }));
+            setFolders(updatedFolders);
             Swal.fire('Deleted!', 'Your Chats has been deleted.', 'success');
           } else {
             Swal.fire(
@@ -80,14 +93,16 @@ export default function ChatSidebarFooter() {
       if (!response.ok) {
         throw new Error('Logout failed');
       }
-
-      await signOut({
-        redirect: false,
-      });
-
-      setChats([]);
-      setFolders([]);
-      router.replace('/');
+      const data = await response.json();
+      console.log(data);
+      if (data === 200) {
+        await signOut({
+          redirect: false,
+        });
+        router.replace('/');
+        setChats([]);
+        setFolders([]);
+      }
     } catch (error) {
       console.error('Logout error:', error);
     }

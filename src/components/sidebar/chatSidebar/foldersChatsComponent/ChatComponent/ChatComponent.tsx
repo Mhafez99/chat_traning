@@ -21,9 +21,10 @@ import {
 
 interface Props {
   chat: Chat;
+  folderId: string;
 }
 
-export default function ChatComponent({ chat }: Props) {
+export default function ChatComponent({ chat, folderId }: Props) {
   const { chats, setChats, folders, setFolders } = useGlobalContext();
 
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
@@ -39,17 +40,36 @@ export default function ChatComponent({ chat }: Props) {
     setTitle(e.target.value);
   }
 
-  function editChatName(e: MouseEvent<HTMLButtonElement>, id: string) {
-    // e.preventDefault();
-    setChats(
-      chats.map((chat: Chat) => {
-        if (chat.chatId === id) {
-          chat.title = title;
+  function editChatName(folderId: string, id: string) {
+    if (title.trim() === '') {
+      toast.error('Chat name cannot be empty');
+      return;
+    }
+    if (folderId === 'Untitled') {
+      setChats(
+        chats.map((chat: Chat) => {
+          if (chat.chatId === id) {
+            chat.title = title;
+            return chat;
+          }
           return chat;
+        })
+      );
+    } else {
+      const updatedFolders = folders.map((folder) => {
+        if (folder.folderId === folderId) {
+          const updatedChats = folder.chats.map((chat) => {
+            if (chat.chatId === id) {
+              return { ...chat, title };
+            }
+            return chat;
+          });
+          return { ...folder, chats: updatedChats };
         }
-        return chat;
-      })
-    );
+        return folder;
+      });
+      setFolders(updatedFolders);
+    }
     setOpenEditTitle(false);
   }
 
@@ -129,6 +149,7 @@ export default function ChatComponent({ chat }: Props) {
                   handleChange(event)
                 }
                 autoFocus
+                required
                 className='mr-12 flex-1 overflow-hidden overflow-ellipsis border-neutral-400 bg-transparent text-left text-[12.5px] leading-3 text-white outline-none focus:border-neutral-100'
               />
             </button>
@@ -136,7 +157,7 @@ export default function ChatComponent({ chat }: Props) {
             <div className='absolute right-1 z-10 flex text-gray-300'>
               <button
                 onClick={(event: MouseEvent<HTMLButtonElement>) =>
-                  editChatName(event, chat.chatId)
+                  editChatName(folderId, chat.chatId)
                 }
                 type='submit'
                 className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>

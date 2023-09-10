@@ -9,7 +9,7 @@ export const useRefreshToken = () => {
       console.error('Session or refreshToken not available.');
       return;
     }
-    if (isAccessTokenExpired(session.user.accessToken)) {
+    if (isAccessTokenExpired()) {
       try {
         const res = await fetch('/api/refreshToken', {
           method: 'POST',
@@ -33,11 +33,16 @@ export const useRefreshToken = () => {
       }
     }
   };
-  const isAccessTokenExpired = (accessToken: string) => {
-    const expirationTime = session?.user.accessExpiryDate; // Replace with the actual expiration time you receive from the server
-    const currentTime = Math.floor(Date.now() / 1000);
+  const isAccessTokenExpired = () => {
+    const expirationTime = session?.user.accessExpiryDate;
+    console.log(expirationTime);
 
-    return currentTime >= expirationTime!;
+    const currentTime = Math.floor(Date.now());
+    console.log(currentTime);
+
+    console.log(currentTime > expirationTime!);
+
+    return currentTime > expirationTime!;
   };
   return {
     refreshToken,

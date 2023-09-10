@@ -23,17 +23,26 @@ export default function FoldersChatsComponent() {
   const { data: session } = useSession();
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
   const [loadingChatAndFolders, setloadingChatAndFolders] = useState(false);
-  const refreshToken = useRefreshToken();
-
-  console.log('RefreshTokenIs', session?.user.refreshToken);
+  const { refreshToken, isAccessTokenExpired } = useRefreshToken();
 
   const getChatsFolders = async () => {
     try {
       setloadingChatAndFolders(true);
-      const accessToken = session?.user.accessToken;
+      let accessToken = session?.user.accessToken;
       if (!accessToken) {
         console.error('User is not authenticated.');
         return;
+      }
+
+      if (isAccessTokenExpired()) {
+        await refreshToken();
+        const updatedAccessToken = session?.user.accessToken;
+
+        if (!updatedAccessToken) {
+          console.error('User is not authenticated.');
+          return;
+        }
+        accessToken = updatedAccessToken;
       }
       const response = await fetch('/api/getChatsAndFolders', {
         method: 'GET',
@@ -68,8 +77,6 @@ export default function FoldersChatsComponent() {
 
           setChats(allChat);
         }
-      } else if (response.status === 401) {
-        await refreshToken();
       } else {
         toast.error(data.message);
       }
@@ -81,7 +88,7 @@ export default function FoldersChatsComponent() {
   };
   useEffect(() => {
     getChatsFolders();
-  }, [session?.user.accessToken]);
+  }, [session]);
 
   const handleDrop = async (
     folderId: string,
@@ -180,7 +187,7 @@ export default function FoldersChatsComponent() {
                         <>
                           {filteredChats.map((chat: Chat) => (
                             <div key={chat.chatId}>
-                              <ChatComponent chat={chat} />
+                              <ChatComponent chat={chat} folderId='' />
                             </div>
                           ))}
                         </>
@@ -194,7 +201,7 @@ export default function FoldersChatsComponent() {
                     <>
                       {availableChats.map((chat: Chat) => (
                         <div key={chat.chatId}>
-                          <ChatComponent chat={chat} />
+                          <ChatComponent chat={chat} folderId='Untitled' />
                         </div>
                       ))}
                     </>

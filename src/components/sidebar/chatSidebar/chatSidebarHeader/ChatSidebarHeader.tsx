@@ -13,6 +13,7 @@ import { Loader } from '@/components/loading/LoadingMsg';
 
 export default function ChatSidebarHeader() {
   const { user, chats, setChats, folders, setFolders } = useGlobalContext();
+  const [title, setTitle] = useState(''); // New chat title state
 
   const { data: session } = useSession();
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
@@ -25,30 +26,14 @@ export default function ChatSidebarHeader() {
         console.error('User is not authenticated.');
         return;
       }
-      console.log(chats.length);
 
-      let counter = chats.length + 1;
-      let newChatTitle = `new conversation ${counter}`;
-
-      console.log(newChatTitle);
-
-      while (
-        chats.some((chat) => chat.title === newChatTitle) ||
-        folders.some((folder) =>
-          folder.chats.some((chat) => chat.title === newChatTitle)
-        )
-      ) {
-        counter++;
-        newChatTitle = `new conversation ${counter}`;
-      }
-      console.log(newChatTitle);
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ title: newChatTitle }),
+        body: JSON.stringify({ title }),
       });
 
       const data = await response.json();
@@ -59,10 +44,12 @@ export default function ChatSidebarHeader() {
         setChats((prevChats: Chat[]) => [
           ...prevChats,
           {
-            title: `new conversation ${counter}`,
+            title,
             chatId: data.chatId,
+            createdAt: data.createdAt,
           },
         ]);
+        setTitle('');
       } else {
         toast.error(data.message);
       }
@@ -82,23 +69,13 @@ export default function ChatSidebarHeader() {
         return;
       }
 
-      let counter = folders.length + 1;
-      let newFolderTitle = `new folder ${counter}`;
-
-      console.log(newFolderTitle);
-
-      while (folders.some((folder) => folder.title === newFolderTitle)) {
-        counter++;
-        newFolderTitle = `new folder ${counter}`;
-      }
-
       const response = await fetch('/api/folder', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ title: newFolderTitle }),
+        body: JSON.stringify({ title }),
       });
       console.log(response);
 
@@ -112,11 +89,12 @@ export default function ChatSidebarHeader() {
           ...prevFolder,
           {
             folderId: data.folderID,
-            title: `New Folder ${counter}`,
+            title,
             chats: [],
             backgroundColor: '',
           },
         ]);
+        setTitle('');
       } else {
         toast.error(data.message);
       }
@@ -133,23 +111,38 @@ export default function ChatSidebarHeader() {
         <Loader />
       ) : (
         <>
-          <button
-            onClick={handleAddChat}
-            disabled={
-              isButtonDisabled || session?.user.accessToken === 'undefined'
-            }
-            className='flex flex-shrink-0 items-center gap-3 w-[190px] rounded-md border border-white/20 bg-transparent p-3 cursor-pointer select-none text-white transition-colors duration-200 hover:bg-gray-500/10 disabled:bg-gray-600 disabled:cursor-not-allowed'>
-            <AddIcon />
-            New Chat
-          </button>
-          <button
-            onClick={hadleAddFolder}
-            disabled={
-              isButtonDisabled || session?.user.accessToken === 'undefined'
-            }
-            className='flex flex-shrink-0 items-center gap-3 ml-2 rounded-md border border-white/20 bg-transparent p-3 cursor-pointer text-sm text-white transition-colors duration-200 hover:bg-gray-500/10 disabled:bg-gray-600 disabled:cursor-not-allowed'>
-            <CreateNewFolderIcon />
-          </button>
+          <div className='flex flex-col'>
+            <input
+              type='text'
+              placeholder='Enter Title For Chat Or Folder'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className='w-full flex-1 rounded-md border border-neutral-600 bg-[#202123] px-4 py-3 pr-10 text-[14px] leading-3 text-white'
+            />
+            <div className='flex mt-3'>
+              <button
+                onClick={handleAddChat}
+                disabled={
+                  isButtonDisabled ||
+                  session?.user.accessToken === 'undefined' ||
+                  title === ''
+                }
+                className='flex flex-shrink-0 items-center gap-3 w-[190px] rounded-md border border-white/20 bg-transparent p-3 cursor-pointer select-none text-white transition-colors duration-200 hover:bg-gray-500/10 disabled:bg-gray-600 disabled:cursor-not-allowed'>
+                <AddIcon />
+                New Chat
+              </button>
+              <button
+                onClick={hadleAddFolder}
+                disabled={
+                  isButtonDisabled ||
+                  session?.user.accessToken === 'undefined' ||
+                  title === ''
+                }
+                className='flex flex-shrink-0 items-center gap-3 ml-2 rounded-md border border-white/20 bg-transparent p-3 cursor-pointer text-sm text-white transition-colors duration-200 hover:bg-gray-500/10 disabled:bg-gray-600 disabled:cursor-not-allowed'>
+                <CreateNewFolderIcon />
+              </button>
+            </div>
+          </div>
         </>
       )}
 
