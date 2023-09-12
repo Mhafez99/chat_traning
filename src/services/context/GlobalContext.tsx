@@ -14,8 +14,13 @@ import PromptModal from '@/interfaces/promptModal.interface';
 import Message from '@/interfaces/message.interface';
 import { DummyUser } from '@/dummyData/dummyUser';
 import Folder from '@/interfaces/folder.interface';
+import { Config } from '@/interfaces/config.interface';
 
 interface StateContext {
+  globalConfig: Partial<Config>;
+  setGlobalConfig: any;
+  chatConfig: Config[];
+  setChatConfig: any;
   user: User | undefined;
   setUser: any;
   chats: Chat[];
@@ -46,9 +51,25 @@ interface StateContext {
 
   chatHistory: Message[];
   setChatHistory: React.Dispatch<React.SetStateAction<Message[]>>;
+
+  lastGeneratedMessage: Message | null;
+  setLastGeneratedMessage: (lastGeneratedMessage: Message | null) => void;
 }
 
 const initialState = {
+  globalConfig: {
+    systemMask: `You are ChatGPT, a large language model trained by OpenAI. Carefully heed the user's instructions. Respond using Markdown.`,
+    model: 'gpt-3.5-turbo',
+    temperature: 1,
+    topP: 1,
+    n: 2,
+    maxTokens: 100,
+    presencePenalty: 0,
+    frequencyPenalty: 0,
+  },
+  setGlobalConfig: (globalConfig: Partial<Config>) => {},
+  chatConfig: [],
+  setChatConfig: (chatConfig: Config) => {},
   user: undefined,
   setUser: (user: User) => {},
   chats: [],
@@ -79,6 +100,9 @@ const initialState = {
 
   chatHistory: [],
   setChatHistory: () => {},
+
+  lastGeneratedMessage: null,
+  setLastGeneratedMessage: () => {},
 };
 
 const AppContext = createContext<StateContext>(initialState);
@@ -90,6 +114,17 @@ interface Props {
 }
 
 export default function GlobalContext({ children }: Props) {
+  const [globalConfig, setGlobalConfig] = useState({
+    systemMask: `You are ChatGPT, a large language model trained by OpenAI. Carefully heed the user's instructions. Respond using Markdown.`,
+    model: 'gpt-3.5-turbo',
+    temperature: 1,
+    topP: 1,
+    n: 2,
+    maxTokens: 4069,
+    presencePenalty: 0,
+    frequencyPenalty: 0,
+  });
+  const [chatConfig, setChatConfig] = useState([]);
   const [theme, setTheme] = useState('dark');
   const [user, setUser] = useState<User | undefined>(DummyUser);
   const [chats, setChats] = useState<Chat[]>([]);
@@ -98,6 +133,8 @@ export default function GlobalContext({ children }: Props) {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [chatTabs, setChatTabs] = useState<ChatTab[]>([]);
 
+  const [lastGeneratedMessage, setLastGeneratedMessage] =
+    useState<Message | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isMessageUpading, setIsMessageUpdating] = useState<boolean>(false);
 
@@ -147,7 +184,6 @@ export default function GlobalContext({ children }: Props) {
       isPromptModalOpen.conditional
     ) {
       setIsModalOpen(true);
-      console.log(isAuthenticationModalOpen);
     } else {
       setIsModalOpen(false);
     }
@@ -188,6 +224,13 @@ export default function GlobalContext({ children }: Props) {
         setIsMessageUpdating,
         chatHistory,
         setChatHistory,
+        globalConfig,
+        setGlobalConfig,
+        chatConfig,
+        setChatConfig,
+
+        lastGeneratedMessage,
+        setLastGeneratedMessage,
       }}>
       {children}
     </AppContext.Provider>

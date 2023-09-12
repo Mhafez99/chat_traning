@@ -56,17 +56,13 @@ export default function SidebarContext({ children }: Props) {
     setIsLoading: any
   ) => {
     setIsLoading(true);
+    const currentValue = e.target.value.toLowerCase();
+    setSearch(currentValue);
     if (sidebar === 'chatSidebar') {
-      setSearch((prevState) => {
-        const currentState = e.target.value;
-        return currentState;
-      });
-      setFilteredChats((prevState) => {
-        const currentState = chats.filter((chat: Chat) =>
-          chat.title.toLowerCase().includes(search.toLowerCase())
-        );
-        return currentState;
-      });
+      const filteredChats = chats.filter((chat: Chat) =>
+        chat.title.toLowerCase().includes(currentValue)
+      );
+      setFilteredChats(filteredChats);
     } else if (sidebar === 'promptSidebar') {
       setSearch((prevState) => {
         const currentState = e.target.value;

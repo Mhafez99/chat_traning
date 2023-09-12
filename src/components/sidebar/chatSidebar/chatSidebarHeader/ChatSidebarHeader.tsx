@@ -10,9 +10,18 @@ import { Toaster, toast } from 'react-hot-toast';
 import { useState } from 'react';
 
 import { Loader } from '@/components/loading/LoadingMsg';
+import { Config } from '@/interfaces/config.interface';
 
 export default function ChatSidebarHeader() {
-  const { user, chats, setChats, folders, setFolders } = useGlobalContext();
+  const {
+    user,
+    chats,
+    setChats,
+    folders,
+    setFolders,
+    globalConfig,
+    setChatConfig,
+  } = useGlobalContext();
   const [title, setTitle] = useState(''); // New chat title state
 
   const { data: session } = useSession();
@@ -49,6 +58,8 @@ export default function ChatSidebarHeader() {
             createdAt: data.createdAt,
           },
         ]);
+        const chatConfig = { ...globalConfig, chatId: data.chatId } as Config;
+        setChatConfig(chatConfig);
         setTitle('');
       } else {
         toast.error(data.message);

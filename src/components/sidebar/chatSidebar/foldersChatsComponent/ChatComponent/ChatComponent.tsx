@@ -19,6 +19,7 @@ import {
   LoaderDragAndDrop,
 } from '@/components/loading/LoadingMsg';
 import { ChatTab } from '@/interfaces/chatTab.interface';
+import { useParams, useRouter } from 'next/navigation';
 
 interface Props {
   chat: Chat;
@@ -37,6 +38,10 @@ export default function ChatComponent({ chat, folderId }: Props) {
   const [deleteChatConfirm, setDeleteChatConfirm] = useState(false);
   const [openEditTitle, setOpenEditTitle] = useState(false);
   const { data: session } = useSession();
+  const router = useRouter();
+  const params = useParams();
+
+  console.log(params);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setTitle(e.target.value);
@@ -105,6 +110,9 @@ export default function ChatComponent({ chat, folderId }: Props) {
           chats: folder.chats.filter((chat) => chat.chatId !== id),
         }));
         setFolders(updatedFolders);
+        if (params.conversationId === id) {
+          router.push('/chats');
+        }
         toast.success('Chat is Deleted Successfully');
       } else {
         toast.error(data.message);

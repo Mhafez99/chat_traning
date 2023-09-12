@@ -34,9 +34,7 @@ export default function Modal() {
       className='fixed flex justify-center items-center w-full h-full  bg-black/50 z-50'>
       {isSettingsModalOpen && (
         <>
-          <div
-            ref={ref}
-            className='w-[512px] border border-gray-400 rounded-lg bg-[#202123] transform overflow-y-auto p-6 transition-all'>
+          <div ref={ref}>
             <SettingsModal />
           </div>
         </>

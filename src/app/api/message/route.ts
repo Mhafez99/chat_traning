@@ -6,13 +6,10 @@ import {
 import { MessageArraySchema } from '@/lib/validators/message';
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
-
-  console.log(messages);
+  const { messages, chatConfig } = await req.json();
+  const token = req.headers.get('authorization') as string;
 
   const parsedMessages = MessageArraySchema.parse(messages);
-
-  console.log(parsedMessages);
 
   const outboundMessages: ChatGPTMessage[] = parsedMessages.map((message) => {
     return {
@@ -22,19 +19,56 @@ export async function POST(req: Request) {
   });
 
   const payload: OpenAiStreamPayload = {
-    model: 'gpt-3.5-turbo',
+    model: chatConfig.model || 'gpt-3.5-turbo',
+    temperature: chatConfig.temperature || 0.4,
+    top_p: chatConfig.topP || 1,
+    n: chatConfig.n || 1,
+    presence_penalty: chatConfig.presencePenalty || 0,
+    frequency_penalty: chatConfig.frequencyPenalty || 0,
+    max_tokens: chatConfig.maxTokens || 150,
     messages: outboundMessages,
-    temperature: 0.4,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-    max_tokens: 150,
     stream: true,
-    n: 1,
   };
 
   const stream = await OpenAiStream(payload);
-  console.log(stream);
 
   return new Response(stream);
 }
+
+// import {
+//   ChatGPTMessage,
+//   OpenAiStream,
+//   OpenAiStreamPayload,
+// } from '@/lib/openai-stream';
+// import { MessageArraySchema } from '@/lib/validators/message';
+// import { NextResponse } from 'next/server';
+
+// export async function POST(req: Request) {
+//   const { messages } = await req.json();
+
+//   console.log(messages[messages.length - 1].text);
+
+//   const token = req.headers.get('authorization') as string;
+
+//   const response = await fetch(
+//     `http://localhost:9000/api/v1/chat/ask/${
+//       messages[messages.length - 1].chatId
+//     }`,
+//     {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         Authorization: token,
+//       },
+//       body: JSON.stringify({ question: messages[messages.length - 1].text }),
+//     }
+//   );
+
+//   const data = await response.json();
+//   console.log(data);
+//   if (response.status !== 201) {
+//     return NextResponse.json(data, { status: data.statusCode });
+//   }
+
+//   return NextResponse.json(data);
+// }

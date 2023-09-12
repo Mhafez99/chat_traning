@@ -11,7 +11,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import Swal from 'sweetalert2';
 import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSidebarContext } from '@/services/context/SidebarContext';
 import { toast } from 'react-hot-toast';
 export default function ChatSidebarFooter() {
@@ -25,6 +25,7 @@ export default function ChatSidebarFooter() {
     folders,
     setChatTabs,
   } = useGlobalContext();
+  const pathname = usePathname();
 
   const { data: session } = useSession();
 
@@ -148,12 +149,13 @@ export default function ChatSidebarFooter() {
           <span>Export data</span>
         </Link>
       </button>
-      <button
+      <Link
+        href={{ pathname: pathname, query: { settings: 'general' } }}
         onClick={() => setIsSettingsModalOpen(true)}
         className='flex w-full cursor-pointer select-none items-center gap-3 rounded-md py-3 px-3 text-[14px] leading-3 text-white transition-colors duration-200 hover:bg-gray-500/10'>
         <SettingsIcon />
         <span>Settings</span>
-      </button>
+      </Link>
       {/* user session */}
       {session && (
         <>
