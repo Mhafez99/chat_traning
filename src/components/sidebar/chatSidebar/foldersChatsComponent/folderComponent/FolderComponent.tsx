@@ -106,11 +106,9 @@ export default function FolderComponent({ folder, onDrop }: Props) {
         },
         body: JSON.stringify({ folderUUID: id }),
       });
-      console.log(response);
 
       const data = await response.json();
 
-      console.log(data);
       if (response.status === 200) {
         const updatedFolders = folders.filter(
           (folder: Folder) => folder.folderId !== id
@@ -151,8 +149,6 @@ export default function FolderComponent({ folder, onDrop }: Props) {
     const chatExistsInFolder = folder.chats.some(
       (chat) => chat.chatId === chatId
     );
-
-    console.log(chatExistsInFolder);
 
     if (!chatExistsInFolder) {
       console.log(

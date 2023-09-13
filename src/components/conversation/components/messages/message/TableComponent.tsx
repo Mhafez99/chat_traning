@@ -6,8 +6,6 @@ const TableComponent = ({ tableText }: Props) => {
   // Split the tableText into lines based on newlines
   const lines: string[] = tableText.split('\n');
 
-  console.log(lines);
-
   // Initialize an array to store the table data
   const tableData: string[][] = [];
 

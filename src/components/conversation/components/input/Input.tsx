@@ -39,8 +39,8 @@ export default function MessageInput({ chatId }: Props) {
   );
 
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  const [Clicked, isClicked] = useState(false);
+  const [regenerateClicked, isRegenerateClicked] = useState(false);
+  const [stopClicked, isStopClicked] = useState(false);
   const [showStopButton, setShowStopButton] = useState(false);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -80,7 +80,7 @@ export default function MessageInput({ chatId }: Props) {
       return response.body;
     },
     onMutate(message) {
-      if (!Clicked) {
+      if (!regenerateClicked || stopClicked) {
         addMessages(message);
       }
     },
@@ -113,10 +113,10 @@ export default function MessageInput({ chatId }: Props) {
       }
 
       // clean up
-      setIsMessageUpdating(false);
       setShowStopButton(false);
+      setIsMessageUpdating(false);
       setMessageContent('');
-      isClicked(false);
+      isRegenerateClicked(false);
       setTimeout(() => {
         textareaRef.current?.focus();
       }, 10);
@@ -125,7 +125,6 @@ export default function MessageInput({ chatId }: Props) {
     onError(_, message) {
       if (abortControllerRef?.current?.signal) {
         toast.error('Controller Aborted');
-        setShowStopButton(false);
       } else {
         toast.error('Something Went Wrong, Please Try Again');
       }
@@ -138,12 +137,15 @@ export default function MessageInput({ chatId }: Props) {
       abortControllerRef.current.abort();
       setIsMessageUpdating(false);
       setMessageContent('');
-      isClicked(true);
+      isStopClicked(true);
+      isRegenerateClicked(false);
+      setShowStopButton(false);
     }
   };
   const handleRegenerateLastMessage = () => {
     if (lastGeneratedMessage && !isLoading) {
-      isClicked(true);
+      isRegenerateClicked(true);
+      isStopClicked(false);
       setIsMessageUpdating(true);
       setMessageContent('');
       sendMessage(lastGeneratedMessage);
@@ -151,7 +153,7 @@ export default function MessageInput({ chatId }: Props) {
   };
   return (
     <>
-      <div className='flex justify-end mb-5 fixed bottom-16 right-7'>
+      <div className='flex justify-end mb-5 fixed bottom-16 right-5'>
         {showStopButton && (
           <button
             onClick={handleCancelStream}

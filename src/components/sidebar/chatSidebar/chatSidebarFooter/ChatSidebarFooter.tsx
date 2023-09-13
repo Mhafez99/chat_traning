@@ -97,7 +97,6 @@ export default function ChatSidebarFooter() {
         throw new Error('Logout failed');
       }
       const data = await response.json();
-      console.log(data);
       if (data === 200) {
         await signOut({
           redirect: false,

@@ -34,14 +34,12 @@ export default function ChatComponent({ chat, folderId }: Props) {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(chat.title);
   const [deleteChatConfirm, setDeleteChatConfirm] = useState(false);
   const [openEditTitle, setOpenEditTitle] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
   const params = useParams();
-
-  console.log(params);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setTitle(e.target.value);
@@ -97,11 +95,9 @@ export default function ChatComponent({ chat, folderId }: Props) {
         },
         body: JSON.stringify({ chatUUID: id }),
       });
-      console.log(response);
 
       const data = await response.json();
 
-      console.log(data);
       if (response.status === 200) {
         setChats(chats.filter((chat: Chat) => chat.chatId !== id));
         setChatTabs(chatTabs.filter((chatTab: ChatTab) => chatTab.id !== id));
@@ -110,7 +106,7 @@ export default function ChatComponent({ chat, folderId }: Props) {
           chats: folder.chats.filter((chat) => chat.chatId !== id),
         }));
         setFolders(updatedFolders);
-        if (params.conversationId === id) {
+        if (params.chatId === id) {
           router.push('/chats');
         }
         toast.success('Chat is Deleted Successfully');

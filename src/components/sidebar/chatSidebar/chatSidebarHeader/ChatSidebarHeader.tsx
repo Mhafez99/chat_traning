@@ -46,7 +46,6 @@ export default function ChatSidebarHeader() {
       });
 
       const data = await response.json();
-      console.log(data);
 
       if (response.status === 200) {
         toast.success('Chat is Created Successfully');
@@ -88,11 +87,9 @@ export default function ChatSidebarHeader() {
         },
         body: JSON.stringify({ title }),
       });
-      console.log(response);
 
       const data = await response.json();
 
-      console.log(data);
       if (response.status === 200) {
         toast.success('Folder is Created Successfully');
 

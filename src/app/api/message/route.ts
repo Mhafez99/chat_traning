@@ -7,7 +7,6 @@ import { MessageArraySchema } from '@/lib/validators/message';
 
 export async function POST(req: Request) {
   const { messages, chatConfig } = await req.json();
-  const token = req.headers.get('authorization') as string;
 
   const parsedMessages = MessageArraySchema.parse(messages);
 
@@ -35,40 +34,35 @@ export async function POST(req: Request) {
   return new Response(stream);
 }
 
-// import {
-//   ChatGPTMessage,
-//   OpenAiStream,
-//   OpenAiStreamPayload,
-// } from '@/lib/openai-stream';
-// import { MessageArraySchema } from '@/lib/validators/message';
 // import { NextResponse } from 'next/server';
 
 // export async function POST(req: Request) {
-//   const { messages } = await req.json();
+//   try {
+//     const { method } = req;
+//     if (method === 'POST') {
+//       const { messages } = await req.json();
+//       const token = req.headers.get('authorization') as string;
+//       const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/chat/ask/${
+//         messages[messages.length - 1].chatId
+//       }`;
+//       const options = {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           Authorization: token,
+//         },
+//         body: JSON.stringify({ question: messages[messages.length - 1].text }),
+//       };
+//       const response = await fetch(endpoint, options);
 
-//   console.log(messages[messages.length - 1].text);
+//       console.log(response);
 
-//   const token = req.headers.get('authorization') as string;
-
-//   const response = await fetch(
-//     `http://localhost:9000/api/v1/chat/ask/${
-//       messages[messages.length - 1].chatId
-//     }`,
-//     {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         Authorization: token,
-//       },
-//       body: JSON.stringify({ question: messages[messages.length - 1].text }),
+//       if (response.status !== 201) {
+//         return NextResponse.json(response.text, { status: response.status });
+//       }
+//       return new NextResponse(response.body, { status: 201 });
 //     }
-//   );
-
-//   const data = await response.json();
-//   console.log(data);
-//   if (response.status !== 201) {
-//     return NextResponse.json(data, { status: data.statusCode });
+//   } catch (error) {
+//     console.log(error);
 //   }
-
-//   return NextResponse.json(data);
 // }

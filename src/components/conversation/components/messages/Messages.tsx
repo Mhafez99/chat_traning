@@ -79,7 +79,6 @@ export default function Messages({ chatId }: Props) {
         </ReactMarkdown>
       );
     } else if (isTableMessage) {
-      console.log(isTableMessage);
       return <TableComponent tableText={message.text} />;
     } else {
       return <SingleMessage message={message} />;

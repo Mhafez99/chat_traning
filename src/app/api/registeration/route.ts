@@ -17,7 +17,6 @@ export async function POST(req: Request) {
 
       const res = await fetch(endpoint, options);
       const data = await res.json();
-      console.log(data);
 
       if (res.status !== 200) {
         return NextResponse.json(data, { status: data.statusCode });

@@ -78,10 +78,8 @@ export default function AuthenticationModal({
         body: JSON.stringify({ user }),
       };
       const response = await fetch(endpoint, options);
-      console.log(response);
 
       const userData = await response.json();
-      console.log(response);
       if (response?.status === 200) {
         toast.success('Success Registration');
         setAuthenticationType('Sign In');
@@ -97,7 +95,6 @@ export default function AuthenticationModal({
   };
 
   const onSubmit = async (data: FieldValues) => {
-    console.log(data);
     if (authenticationType === 'Sign In') {
       logIn(data);
     } else if (authenticationType === 'Register') {

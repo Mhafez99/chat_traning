@@ -6,8 +6,6 @@ export async function DELETE(req: Request) {
     if (method === 'DELETE') {
       const refreshToken = await req.json();
 
-      console.log(refreshToken);
-
       const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/auth/logout`;
       const options = {
         method: 'DELETE',

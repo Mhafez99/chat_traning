@@ -27,14 +27,12 @@ export const options: NextAuthOptions = {
             }
           );
 
-          console.log(response);
           if (!response.ok) {
             throw new Error('Authentication failed');
           }
 
           const user = await response.json();
 
-          console.log(user);
 
           if (user.statusCode === 401) {
             throw new Error('Authentication failed: ' + user.message);

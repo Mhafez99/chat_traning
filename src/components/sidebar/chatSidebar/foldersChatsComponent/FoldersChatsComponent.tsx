@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useState } from 'react';
 
 import { useGlobalContext } from '@/services/context/GlobalContext';
 
@@ -24,8 +24,9 @@ export default function FoldersChatsComponent() {
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
   const [loadingChatAndFolders, setloadingChatAndFolders] = useState(false);
   const { refreshToken, isAccessTokenExpired } = useRefreshToken();
+  
 
-  const getChatsFolders = async () => {
+  const getChatsFolders = useCallback(async () => {
     try {
       setloadingChatAndFolders(true);
       let accessToken = session?.user.accessToken;
@@ -67,13 +68,11 @@ export default function FoldersChatsComponent() {
               return folder.folder;
             }
           );
-          console.log(allFoldersWithChatsAndWithoutChats);
 
           setFolders(allFoldersWithChatsAndWithoutChats);
         }
         if (chatsWithoutFolder) {
           const allChat = chatsWithoutFolder[0].folder.chats;
-          console.log(allChat);
 
           setChats(allChat);
         }
@@ -85,10 +84,11 @@ export default function FoldersChatsComponent() {
     } finally {
       setloadingChatAndFolders(false);
     }
-  };
+  },[isAccessTokenExpired, refreshToken, session?.user.accessToken])
+
   useEffect(() => {
     getChatsFolders();
-  }, [session]);
+  }, []);
 
   const handleDrop = async (
     folderId: string,
@@ -111,11 +111,9 @@ export default function FoldersChatsComponent() {
         },
         body: JSON.stringify({ folderUUID: folderId, chatUUID: chatId }),
       });
-      console.log(response);
 
       const data = await response.json();
 
-      console.log(data);
       if (response.status === 200) {
         const updatedFolders = folders.map((folder) => {
           if (folder.folderId === folderId) {

@@ -6,8 +6,6 @@ export async function POST(req: Request) {
     if (method === 'POST') {
       const refreshToken = await req.json();
 
-      console.log(JSON.stringify({ refreshToken: refreshToken }));
-
       const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/auth/refresh`;
       const options = {
         method: 'POST',

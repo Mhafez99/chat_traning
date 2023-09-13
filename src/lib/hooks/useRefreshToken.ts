@@ -25,8 +25,6 @@ export const useRefreshToken = () => {
 
         const data = await res.json();
 
-        console.log('new accessToken', data.accessToken);
-
         if (session) session.user.accessToken = data.accessToken;
       } catch (error) {
         console.error('Error refreshing token:', error);
@@ -35,12 +33,8 @@ export const useRefreshToken = () => {
   };
   const isAccessTokenExpired = () => {
     const expirationTime = session?.user.accessExpiryDate;
-    console.log(expirationTime);
 
     const currentTime = Math.floor(Date.now());
-    console.log(currentTime);
-
-    console.log(currentTime > expirationTime!);
 
     return currentTime > expirationTime!;
   };
