@@ -18,6 +18,7 @@ import { toast } from 'react-hot-toast';
 import {
   LoaderDelete,
   LoaderDragAndDrop,
+  LoaderRenameTitle,
 } from '@/components/loading/LoadingMsg';
 
 interface Props {
@@ -29,7 +30,7 @@ type ColorObject = {
 };
 export default function FolderComponent({ folder, onDrop }: Props) {
   const { chats, setChats, folders, setFolders } = useGlobalContext();
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(folder.title);
   const [editTitle, setEditTitle] = useState(false);
   const [deleteFolderConfirm, setDeleteFolderConfirm] = useState(false);
   const [isChatListOpen, setIsChatListOpen] = useState(false);
@@ -40,6 +41,16 @@ export default function FolderComponent({ folder, onDrop }: Props) {
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
   const [isDropStart, setIsDropStart] = useState(false);
   const { data: session } = useSession();
+
+  const [isRenameFolder, setIsRenameFolder] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (editTitle) {
+      inputRef?.current?.select();
+    }
+  }, [editTitle]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -71,23 +82,54 @@ export default function FolderComponent({ folder, onDrop }: Props) {
     setTitle(e.target.value);
   }
 
-  function editFolderName(e: any, id: string) {
+  const handleEditFolderName = async (e: any, folderId: string) => {
     if (title.trim() === '') {
       toast.error('Folder name cannot be empty');
       return;
     }
+    if (title === folder.title) {
+      toast.error('Folder name same the old name');
+      return;
+    }
+    const accessToken = session?.user.accessToken;
+    if (!accessToken) {
+      console.error('User is not authenticated.');
+      return;
+    }
+    try {
+      setIsRenameFolder(true);
+      const response = await fetch('/api/renameFolderName', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ title, folderId }),
+      });
 
-    setFolders(
-      folders.map((folder: Folder) => {
-        if (folder.folderId === id) {
-          folder.title = title;
-          return folder;
-        }
-        return folder;
-      })
-    );
-    setEditTitle(false);
-  }
+      const data = await response.json();
+
+      if (response.status === 200) {
+        toast.success(data.message);
+        setFolders(
+          folders.map((folder: Folder) => {
+            if (folder.folderId === folderId) {
+              folder.title = title;
+              return folder;
+            }
+            return folder;
+          })
+        );
+        setEditTitle(false);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error('Failed to Edit Name of this Folder ');
+    } finally {
+      setIsRenameFolder(false);
+    }
+  };
 
   const handleDeleteFolder = async (id: string) => {
     try {
@@ -196,6 +238,7 @@ export default function FolderComponent({ folder, onDrop }: Props) {
               }}>
               <IconCaretRight size={18} color={textColorClass} />
               <input
+                ref={inputRef}
                 type='text'
                 id='title'
                 name='title'
@@ -207,17 +250,23 @@ export default function FolderComponent({ folder, onDrop }: Props) {
             </button>
 
             <div className='absolute right-1 z-10 flex text-gray-300'>
-              <button
-                onClick={() => editFolderName(event, folder.folderId)}
-                type='submit'
-                className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
-                <CheckIcon />
-              </button>
-              <button
-                onClick={() => setEditTitle(!editTitle)}
-                className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
-                <ClearIcon />
-              </button>
+              {isRenameFolder ? (
+                <LoaderRenameTitle />
+              ) : (
+                <>
+                  <button
+                    onClick={() => handleEditFolderName(event, folder.folderId)}
+                    type='submit'
+                    className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
+                    <CheckIcon />
+                  </button>
+                  <button
+                    onClick={() => setEditTitle(!editTitle)}
+                    className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
+                    <ClearIcon />
+                  </button>
+                </>
+              )}
             </div>
           </>
         ) : (

@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, MouseEvent, useState } from 'react';
+import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
 import { useGlobalContext } from '@/services/context/GlobalContext';
@@ -17,6 +17,7 @@ import { toast } from 'react-hot-toast';
 import {
   LoaderDelete,
   LoaderDragAndDrop,
+  LoaderRenameTitle,
 } from '@/components/loading/LoadingMsg';
 import { ChatTab } from '@/interfaces/chatTab.interface';
 import { useParams, useRouter } from 'next/navigation';
@@ -32,6 +33,8 @@ export default function ChatComponent({ chat, folderId }: Props) {
 
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
 
+  const [isRenameChat, setIsRenameChat] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
 
   const [title, setTitle] = useState(chat.title);
@@ -40,43 +43,82 @@ export default function ChatComponent({ chat, folderId }: Props) {
   const { data: session } = useSession();
   const router = useRouter();
   const params = useParams();
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (openEditTitle) {
+      inputRef?.current?.select();
+    }
+  }, [openEditTitle]);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setTitle(e.target.value);
   }
 
-  function editChatName(folderId: string, id: string) {
+  const handleEditChatName = async (folderId: string, chatId: string) => {
     if (title.trim() === '') {
       toast.error('Chat name cannot be empty');
       return;
     }
-    if (folderId === 'Untitled') {
-      setChats(
-        chats.map((chat: Chat) => {
-          if (chat.chatId === id) {
-            chat.title = title;
-            return chat;
-          }
-          return chat;
-        })
-      );
-    } else {
-      const updatedFolders = folders.map((folder) => {
-        if (folder.folderId === folderId) {
-          const updatedChats = folder.chats.map((chat) => {
-            if (chat.chatId === id) {
-              return { ...chat, title };
-            }
-            return chat;
-          });
-          return { ...folder, chats: updatedChats };
-        }
-        return folder;
-      });
-      setFolders(updatedFolders);
+    if (title === chat.title) {
+      toast.error('Chat name same the old name');
+      return;
     }
-    setOpenEditTitle(false);
-  }
+    const accessToken = session?.user.accessToken;
+    if (!accessToken) {
+      console.error('User is not authenticated.');
+      return;
+    }
+    try {
+      setIsRenameChat(true);
+      const response = await fetch('/api/renameChatName', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ title, chatId }),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        toast.success(data.message);
+        if (folderId === 'Untitled') {
+          setChats(
+            chats.map((chat: Chat) => {
+              if (chat.chatId === chatId) {
+                chat.title = title;
+                return chat;
+              }
+              return chat;
+            })
+          );
+        } else {
+          const updatedFolders = folders.map((folder) => {
+            if (folder.folderId === folderId) {
+              const updatedChats = folder.chats.map((chat) => {
+                if (chat.chatId === chatId) {
+                  return { ...chat, title };
+                }
+                return chat;
+              });
+              return { ...folder, chats: updatedChats };
+            }
+            return folder;
+          });
+          setFolders(updatedFolders);
+        }
+        setOpenEditTitle(false);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error('Failed to Edit Name of this  chat ');
+    } finally {
+      setIsRenameChat(false);
+    }
+  };
 
   const handleDeleteChat = async (id: string) => {
     try {
@@ -148,6 +190,7 @@ export default function ChatComponent({ chat, folderId }: Props) {
               draggable='true'>
               <ChatIcon />
               <input
+                ref={inputRef}
                 type='text'
                 id='title'
                 name='title'
@@ -162,19 +205,25 @@ export default function ChatComponent({ chat, folderId }: Props) {
             </button>
 
             <div className='absolute right-1 z-10 flex text-gray-300'>
-              <button
-                onClick={(event: MouseEvent<HTMLButtonElement>) =>
-                  editChatName(folderId, chat.chatId)
-                }
-                type='submit'
-                className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
-                <CheckIcon />
-              </button>
-              <button
-                onClick={() => setOpenEditTitle(!openEditTitle)}
-                className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
-                <ClearIcon />
-              </button>
+              {isRenameChat ? (
+                <LoaderRenameTitle />
+              ) : (
+                <>
+                  <button
+                    onClick={(event: MouseEvent<HTMLButtonElement>) =>
+                      handleEditChatName(folderId, chat.chatId)
+                    }
+                    type='submit'
+                    className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
+                    <CheckIcon />
+                  </button>
+                  <button
+                    onClick={() => setOpenEditTitle(!openEditTitle)}
+                    className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
+                    <ClearIcon />
+                  </button>
+                </>
+              )}
             </div>
           </>
         ) : (

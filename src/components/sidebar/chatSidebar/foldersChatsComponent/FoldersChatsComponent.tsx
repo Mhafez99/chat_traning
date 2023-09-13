@@ -24,7 +24,6 @@ export default function FoldersChatsComponent() {
   const [buttonDisabled, setIsButtonDisabled] = useState(false);
   const [loadingChatAndFolders, setloadingChatAndFolders] = useState(false);
   const { refreshToken, isAccessTokenExpired } = useRefreshToken();
-  
 
   const getChatsFolders = useCallback(async () => {
     try {
@@ -37,13 +36,6 @@ export default function FoldersChatsComponent() {
 
       if (isAccessTokenExpired()) {
         await refreshToken();
-        const updatedAccessToken = session?.user.accessToken;
-
-        if (!updatedAccessToken) {
-          console.error('User is not authenticated.');
-          return;
-        }
-        accessToken = updatedAccessToken;
       }
       const response = await fetch('/api/getChatsAndFolders', {
         method: 'GET',
@@ -80,15 +72,15 @@ export default function FoldersChatsComponent() {
         toast.error(data.message);
       }
     } catch (error) {
-      console.error('Error Fetch Data');
+      console.error('Error Fetch Data', error);
     } finally {
       setloadingChatAndFolders(false);
     }
-  },[isAccessTokenExpired, refreshToken, session?.user.accessToken])
+  }, [isAccessTokenExpired, refreshToken, session?.user.accessToken]);
 
   useEffect(() => {
     getChatsFolders();
-  }, []);
+  }, [session?.user.accessToken]);
 
   const handleDrop = async (
     folderId: string,
