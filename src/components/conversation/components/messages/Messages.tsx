@@ -1,7 +1,7 @@
+
 import Message from '@/interfaces/message.interface';
 
 import SingleMessage from './message/Message';
-import { FC, HTMLAttributes } from 'react';
 import { useGlobalContext } from '@/services/context/GlobalContext';
 import ReactMarkdown from 'react-markdown';
 import TableComponent from './message/TableComponent';
@@ -22,6 +22,7 @@ export default function Messages({ chatId }: Props) {
   const chatMessages = inverseMessages.filter(
     (message) => message.chatId === chatId
   );
+  
 
   const renderMessageContent = (message: Message) => {
     const isCodeMessage =
@@ -112,13 +113,13 @@ export default function Messages({ chatId }: Props) {
                       ? 'order-1 items-end'
                       : 'order-2 items-start'
                   }`}>
-                    {/* {message.isUserMessage ? <UserAvatar /> : <BotAvatar />} */}
-                  <p
+                  {/* {message.isUserMessage ? <UserAvatar /> : <BotAvatar />} */}
+                  <div
                     className={` ${
                       message.isUserMessage ? 'text-white' : 'text-gray-900'
                     }`}>
                     {renderMessageContent(message)}
-                  </p>
+                  </div>
                 </div>
               </div>
             </div>

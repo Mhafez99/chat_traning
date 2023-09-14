@@ -29,10 +29,10 @@ export default function FoldersChatsComponent() {
     try {
       setloadingChatAndFolders(true);
       let accessToken = session?.user.accessToken;
-      if (!accessToken) {
-        console.error('User is not authenticated.');
-        return;
-      }
+      // if (!accessToken) {
+      //   console.error('User is not authenticated.');
+      //   return;
+      // }
 
       if (isAccessTokenExpired()) {
         await refreshToken();
@@ -80,7 +80,7 @@ export default function FoldersChatsComponent() {
 
   useEffect(() => {
     getChatsFolders();
-  }, [session?.user.accessToken]);
+  }, []);
 
   const handleDrop = async (
     folderId: string,

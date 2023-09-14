@@ -34,14 +34,13 @@ export default function MessageInput({ chatId }: Props) {
   const [messageContent, setMessageContent] = useState<string>('');
   const { data: session } = useSession();
   const textareaRef = useRef<null | HTMLTextAreaElement>(null);
-  const megOfSpecificChat = chatHistory.filter(
-    (message) => message.chatId === chatId
-  );
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const [regenerateClicked, isRegenerateClicked] = useState(false);
   const [stopClicked, isStopClicked] = useState(false);
   const [showStopButton, setShowStopButton] = useState(false);
+
+  console.log(messages);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -69,13 +68,12 @@ export default function MessageInput({ chatId }: Props) {
           Authorization: `Bearer ${session?.user.accessToken}`,
         },
         body: JSON.stringify({
-          messages: megOfSpecificChat.concat([message]),
+          // messages: megOfSpecificChat.concat([message]),
+          messages: [message],
           chatConfig,
         }),
         signal,
       });
-
-      console.log(response);
 
       if (!response.ok) {
         throw new Error();
@@ -96,10 +94,7 @@ export default function MessageInput({ chatId }: Props) {
         text: '',
         chatId,
       };
-      setChatHistory((prevChatHistory) => [
-        ...prevChatHistory,
-        responseMessage,
-      ]);
+
       addMessages(responseMessage);
 
       const reader = stream.getReader();
@@ -114,6 +109,10 @@ export default function MessageInput({ chatId }: Props) {
         const chunkValue = decoder.decode(value);
         updateMessage(id, (prev) => prev + chunkValue);
       }
+      // setChatHistory((prevChatHistory) => [
+      //   ...prevChatHistory,
+      //   responseMessage,
+      // ]);
 
       // clean up
       setShowStopButton(false);
@@ -164,7 +163,7 @@ export default function MessageInput({ chatId }: Props) {
             Stop generation
           </button>
         )}
-        {megOfSpecificChat.length > 0 && (
+        {messages.length > 0 && (
           <button
             onClick={handleRegenerateLastMessage}
             className='bg-[#11A37f] text-white font-bold px-4 py-2 rounded hover:opacity-50 disabled:opacity-50 disabled:cursor-not-allowed  '

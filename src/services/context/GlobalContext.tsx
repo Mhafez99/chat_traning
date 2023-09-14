@@ -53,7 +53,7 @@ interface StateContext {
   setChatHistory: React.Dispatch<React.SetStateAction<Message[]>>;
 
   lastGeneratedMessage: Message | null;
-  setLastGeneratedMessage: (lastGeneratedMessage: Message | null) => void;
+  setLastGeneratedMessage: (lastGeneratedMessage:Message | null) => void;
 }
 
 const initialState = {

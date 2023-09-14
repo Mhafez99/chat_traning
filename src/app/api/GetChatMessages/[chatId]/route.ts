@@ -6,7 +6,6 @@ export async function GET(req: Request, { params }: any) {
     const { method } = req;
     if (method === 'GET') {
       const token = req.headers.get('authorization') as string;
-      console.log(token);
       const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/chat/${chatId}`;
       const options = {
         method: 'GET',
@@ -15,19 +14,14 @@ export async function GET(req: Request, { params }: any) {
           Authorization: token,
         },
       };
-      const response = await fetch(endpoint, options);
+      const res = await fetch(endpoint, options);
+      const data = await res.json();
 
-      console.log(response);
-
-      if (response.status === 200) {
-        const data = await response.json();
-
-        console.log(data);
-
-        return new NextResponse(data, { status: 200 });
-      } else {
-        throw new Error('Server Error');
+      if (res.status !== 200) {
+        return NextResponse.json(data, { status: data.statusCode });
       }
+
+      return NextResponse.json(data);
     }
   } catch (error) {
     console.log(error);
