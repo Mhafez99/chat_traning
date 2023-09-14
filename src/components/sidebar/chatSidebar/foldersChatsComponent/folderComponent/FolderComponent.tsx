@@ -238,6 +238,7 @@ export default function FolderComponent({ folder, onDrop }: Props) {
               }}>
               <IconCaretRight size={18} color={textColorClass} />
               <input
+                disabled= {isRenameFolder}
                 ref={inputRef}
                 type='text'
                 id='title'

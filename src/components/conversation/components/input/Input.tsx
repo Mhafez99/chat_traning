@@ -74,6 +74,9 @@ export default function MessageInput({ chatId }: Props) {
         }),
         signal,
       });
+
+      console.log(response);
+
       if (!response.ok) {
         throw new Error();
       }

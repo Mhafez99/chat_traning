@@ -186,10 +186,11 @@ export default function ChatComponent({ chat, folderId }: Props) {
         {openEditTitle ? (
           <>
             <button
-              className='flex items-center gap-3 w-full rounded-lg bg-[#343541]/90 p-3 cursor-pointer text-sm transition-colors duration-200 hover:bg-[#343541]/90'
+              className='flex items-center gap-3 w-full rounded-lg bg-[#343541]/90 p-3 cursor-pointer text-sm transition-colors duration-200 hover:bg-[#343541]/90 disabled:select-none'
               draggable='true'>
               <ChatIcon />
               <input
+                disabled={isRenameChat}
                 ref={inputRef}
                 type='text'
                 id='title'
