@@ -6,7 +6,6 @@ export async function POST(req: Request) {
     if (method === 'POST') {
       const { chatUUID, folderUUID } = await req.json();
 
-
       const token = req.headers.get('authorization') as string;
 
       const endpoint = `${process.env.BACKEND_API_ROUTE}/api/v1/chat/ChatToFolder`;
@@ -20,7 +19,6 @@ export async function POST(req: Request) {
       };
 
       const res = await fetch(endpoint, options);
-
 
       const data = await res.json();
 

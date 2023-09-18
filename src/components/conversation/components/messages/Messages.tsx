@@ -1,4 +1,3 @@
-
 import Message from '@/interfaces/message.interface';
 
 import SingleMessage from './message/Message';
@@ -12,17 +11,17 @@ import { solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { toast } from 'react-hot-toast';
 import UserAvatar from '@/components/avatars/UserAvatar';
 import BotAvatar from '@/components/avatars/BotAvatar';
+import { Empty } from '@/components/empty/Empty';
+import { MessagesLoading } from '@/components/loading/LoadingMsg';
 
 interface Props {
-  chatId: string;
+  loadingMessages: boolean;
 }
-export default function Messages({ chatId }: Props) {
+export default function Messages({ loadingMessages }: Props) {
   const { messages } = useGlobalContext();
+  console.log(messages);
   const inverseMessages = [...messages].reverse();
-  const chatMessages = inverseMessages.filter(
-    (message) => message.chatId === chatId
-  );
-  
+  console.log(inverseMessages);
 
   const renderMessageContent = (message: Message) => {
     const isCodeMessage =
@@ -95,34 +94,45 @@ export default function Messages({ chatId }: Props) {
   return (
     <div className='flex flex-col-reverse flex-1 px-2 py-3 mb-12'>
       <div className='flex-1 flex-grow' />
-      {chatMessages?.map((message) => {
+      {inverseMessages.length === 0 && !loadingMessages && (
+        <div>
+          <Empty label='No Conversation Started.' />
+        </div>
+      )}
+      {loadingMessages && <MessagesLoading />}
+      {inverseMessages?.map((message) => {
         if (message)
           return (
-            <div
-              key={message?.messageId}
-              className={`px-4 py-2 rounded-lg my-2 ${
-                message.isUserMessage ? 'bg-[#434654]' : 'bg-white'
-              }`}>
-              <div
-                className={`flex items-end ${
-                  message.isUserMessage && 'justify-end'
-                }`}>
+            <>
+              <div className='flex w-full items-center'>
+                {!message.isUserMessage && <BotAvatar />}
                 <div
-                  className={`flex space-y-2 text-sm max-w-2xl mx-2 overflow-x-hidden${
-                    message.isUserMessage
-                      ? 'order-1 items-end'
-                      : 'order-2 items-start'
+                  key={message?.messageId}
+                  className={`px-4 py-2 rounded-lg my-2 flex-1 ${
+                    message.isUserMessage ? 'bg-[#434654]' : 'bg-white'
                   }`}>
-                  {/* {message.isUserMessage ? <UserAvatar /> : <BotAvatar />} */}
                   <div
-                    className={` ${
-                      message.isUserMessage ? 'text-white' : 'text-gray-900'
+                    className={`flex items-end ${
+                      message.isUserMessage && 'justify-end'
                     }`}>
-                    {renderMessageContent(message)}
+                    <div
+                      className={`flex space-y-2 text-sm max-w-2xl mx-2 overflow-x-hidden${
+                        message.isUserMessage
+                          ? 'order-1 items-end'
+                          : 'order-2 items-start'
+                      }`}>
+                      <div
+                        className={` ${
+                          message.isUserMessage ? 'text-white' : 'text-gray-900'
+                        }`}>
+                        {renderMessageContent(message)}
+                      </div>
+                    </div>
                   </div>
                 </div>
+                {message.isUserMessage && <UserAvatar />}
               </div>
-            </div>
+            </>
           );
       })}
     </div>

@@ -43,6 +43,7 @@ interface StateContext {
   toggleTheme: any;
 
   messages: Message[];
+  setMessages: any;
   isMessageUpading: boolean;
   addMessages: (message: Message) => void;
   removeMessage: (id: string) => void;
@@ -53,7 +54,7 @@ interface StateContext {
   setChatHistory: React.Dispatch<React.SetStateAction<Message[]>>;
 
   lastGeneratedMessage: Message | null;
-  setLastGeneratedMessage: (lastGeneratedMessage:Message | null) => void;
+  setLastGeneratedMessage: (lastGeneratedMessage: Message | null) => void;
 }
 
 const initialState = {
@@ -92,6 +93,7 @@ const initialState = {
   toggleTheme: () => {},
 
   messages: [],
+  setMessages: () => {},
   isMessageUpading: false,
   addMessages: () => {},
   removeMessage: () => {},
@@ -156,7 +158,7 @@ export default function GlobalContext({ children }: Props) {
 
   const addMessages = (message: Message) => {
     setMessages((prev) => [...prev, message]);
-    setChatHistory((prevAllMessages) => [...prevAllMessages, message]);
+    // setChatHistory((prevAllMessages) => [...prevAllMessages, message]);
   };
 
   const removeMessage = (id: string) => {
@@ -227,6 +229,7 @@ export default function GlobalContext({ children }: Props) {
         globalConfig,
         setGlobalConfig,
         chatConfig,
+        setMessages,
         setChatConfig,
 
         lastGeneratedMessage,

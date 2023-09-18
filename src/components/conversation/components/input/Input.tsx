@@ -67,11 +67,7 @@ export default function MessageInput({ chatId }: Props) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.user.accessToken}`,
         },
-        body: JSON.stringify({
-          // messages: megOfSpecificChat.concat([message]),
-          messages: [message],
-          chatConfig,
-        }),
+        body: JSON.stringify({ messages: [message], chatConfig }),
         signal,
       });
 
@@ -109,11 +105,6 @@ export default function MessageInput({ chatId }: Props) {
         const chunkValue = decoder.decode(value);
         updateMessage(id, (prev) => prev + chunkValue);
       }
-      // setChatHistory((prevChatHistory) => [
-      //   ...prevChatHistory,
-      //   responseMessage,
-      // ]);
-
       // clean up
       setShowStopButton(false);
       setIsMessageUpdating(false);

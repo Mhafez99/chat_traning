@@ -10,6 +10,8 @@ export const useRefreshToken = () => {
       return;
     }
     try {
+      console.log('Hafez');
+
       const res = await fetch('/api/refreshToken', {
         method: 'POST',
         headers: {
@@ -17,12 +19,17 @@ export const useRefreshToken = () => {
         },
         body: JSON.stringify(session?.user.refreshToken),
       });
+
+      console.log(res);
+
       if (!res.ok) {
         console.error('Token refresh request failed.');
         return;
       }
 
       const data = await res.json();
+
+      console.log(data);
 
       if (session) session.user.accessToken = data.accessToken;
     } catch (error) {

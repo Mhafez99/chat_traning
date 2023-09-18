@@ -22,7 +22,7 @@ export default function ChatSidebarHeader() {
     globalConfig,
     setChatConfig,
   } = useGlobalContext();
-  const [title, setTitle] = useState(''); // New chat title state
+  const [title, setTitle] = useState('');
 
   const { data: session } = useSession();
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);

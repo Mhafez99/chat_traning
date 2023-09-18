@@ -2,6 +2,7 @@ import {
   ColorRing,
   FallingLines,
   Oval,
+  RotatingLines,
   ThreeDots,
   Vortex,
 } from 'react-loader-spinner';
@@ -72,6 +73,19 @@ export const LoaderRenameTitle = () => {
         wrapperStyle={{}}
         wrapperClass='blocks-wrapper'
         colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
+      />
+    </div>
+  );
+};
+export const MessagesLoading = () => {
+  return (
+    <div className='h-full flex flex-col gap-y-4 items-center justify-center w-full'>
+      <RotatingLines
+        strokeColor='white'
+        strokeWidth='5'
+        animationDuration='0.75'
+        width='96'
+        visible={true}
       />
     </div>
   );

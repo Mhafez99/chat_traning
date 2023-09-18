@@ -5,6 +5,8 @@ export async function POST(req: Request) {
     const { method } = req;
     if (method === 'POST') {
       const chatTitle = await req.json();
+      if (!chatTitle)
+        return NextResponse.json({ message: 'Missing requried data' });
 
       const token = req.headers.get('authorization') as string;
 

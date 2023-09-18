@@ -37,6 +37,7 @@ export default function ChatComponent({ chat, folderId }: Props) {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [title, setTitle] = useState(chat.title);
   const [deleteChatConfirm, setDeleteChatConfirm] = useState(false);
   const [openEditTitle, setOpenEditTitle] = useState(false);
@@ -54,7 +55,9 @@ export default function ChatComponent({ chat, folderId }: Props) {
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setTitle(e.target.value);
   }
-
+  const handleChatClick = (chatId: string) => {
+    setSelectedChatId(chatId);
+  };
   const handleEditChatName = async (folderId: string, chatId: string) => {
     if (title.trim() === '') {
       toast.error('Chat name cannot be empty');
@@ -178,11 +181,12 @@ export default function ChatComponent({ chat, folderId }: Props) {
   return (
     <>
       <div
-        className='relative flex items-center'
+        className='relative flex items-center '
         draggable
         onDragStart={handleDragStart}
         onDragOver={(event) => event.preventDefault()}
-        onDragEnd={handleDragEnd}>
+        onDragEnd={handleDragEnd}
+        onClick={() => handleChatClick(chat.chatId)}>
         {openEditTitle ? (
           <>
             <button
@@ -235,7 +239,11 @@ export default function ChatComponent({ chat, folderId }: Props) {
               <>
                 <Link
                   href={`/chats/${chat.chatId}`}
-                  className='flex items-center gap-3 w-full rounded-lg bg-[#343541]/90 p-3 cursor-pointer text-sm transition-colors duration-200 hover:bg-[#343541]/90'>
+                  className={`flex items-center gap-3 w-full rounded-lg  p-3 cursor-pointer text-sm transition-colors duration-200 hover:bg-[#343541]/50 ${
+                    chat.chatId === selectedChatId
+                      ? `bg-[#343541]/30`
+                      : 'bg-[#343541]/90'
+                  }`}>
                   <ChatIcon />
                   <div className='relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3 pr-12 first-letter:uppercase'>
                     {chat.title}

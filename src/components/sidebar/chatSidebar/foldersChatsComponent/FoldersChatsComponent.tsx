@@ -76,7 +76,7 @@ export default function FoldersChatsComponent() {
     } finally {
       setloadingChatAndFolders(false);
     }
-  }, [isAccessTokenExpired, refreshToken, session?.user.accessToken]);
+  }, [refreshToken]);
 
   useEffect(() => {
     getChatsFolders();
@@ -209,3 +209,4 @@ export default function FoldersChatsComponent() {
     </div>
   );
 }
+

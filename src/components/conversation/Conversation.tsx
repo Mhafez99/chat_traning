@@ -4,12 +4,14 @@ import Chat from '@/interfaces/chat.interface';
 
 import MessageInput from './components/input/Input';
 import Messages from './components/messages/Messages';
+import { Suspense } from 'react';
 
 interface Props {
   id: string;
+  loadingMessages: boolean;
 }
 
-export default function Conversation({ id }: Props) {
+export default function Conversation({ id, loadingMessages }: Props) {
   const { chats, theme, folders } = useGlobalContext();
 
   let chat;
@@ -38,7 +40,8 @@ export default function Conversation({ id }: Props) {
               theme === 'dark' ? 'bg-[#343541]' : 'bg-white'
             }`}>
             {/* Messages */}
-            <Messages chatId={id} />
+
+            <Messages loadingMessages={loadingMessages} />
 
             {/* Input Message */}
             <MessageInput chatId={id} />

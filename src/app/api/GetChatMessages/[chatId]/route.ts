@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 
-export async function GET(req: Request, { params }: any) {
+type Props = {
+  params: {
+    chatId: string;
+  };
+};
+
+export async function GET(req: Request, { params: { chatId } }: Props) {
+  // const chatId = req.url.slice(req.url.lastIndexOf('/') + 1);
   try {
-    const { chatId } = params;
     const { method } = req;
     if (method === 'GET') {
       const token = req.headers.get('authorization') as string;

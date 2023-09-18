@@ -8,14 +8,15 @@ import ConversationsTab from '@/components/conversationsTab/ConversationsTab';
 import Tab from '@/components/conversation/components/tab/tab';
 import { useSession } from 'next-auth/react';
 import { useRefreshToken } from '@/lib/hooks/useRefreshToken';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import Message from '@/interfaces/message.interface';
 
 export default function ConversationPage({
   params,
 }: {
   params: { chatId: string };
 }) {
-  const { chats, theme, folders, addMessages } = useGlobalContext();
+  const { chats, theme, folders, setMessages } = useGlobalContext();
   const [loadingMessages, setLoadingMessages] = useState(false);
   const { data: session } = useSession();
   const { refreshToken, isAccessTokenExpired } = useRefreshToken();
@@ -23,15 +24,15 @@ export default function ConversationPage({
   const getChatMessages = async () => {
     try {
       setLoadingMessages(true);
+      setMessages([]);
       let accessToken = session?.user.accessToken;
       if (!accessToken) {
         console.error('User is not authenticated.');
         return;
       }
-
-      // if (isAccessTokenExpired()) {
-      //   await refreshToken();
-      // }
+      if (isAccessTokenExpired()) {
+        await refreshToken();
+      }
       const response = await fetch(`/api/getChatMessages/${params.chatId}`, {
         method: 'GET',
         headers: {
@@ -41,17 +42,31 @@ export default function ConversationPage({
       });
       if (response.status === 200) {
         const messages = await response.json();
-        const message = messages.map((message: any) => {
-          console.log(message);
-          // addMessages(message);
-        });
+        setMessages(messages);
       }
-    } catch {}
+    } catch (error) {
+      console.error('Error Fetch Data', error);
+    } finally {
+      setLoadingMessages(false);
+    }
   };
 
   useEffect(() => {
     getChatMessages();
   }, []);
+
+  // const { data, error, isLoading } = useQuery({
+  //   queryKey: [`${params.chatId}`],
+  //   queryFn: getChatMessages,
+  // });
+
+  // useEffect(() => {
+  //   if (data === undefined) {
+  //     setMessages([]);
+  //   } else {
+  //     setMessages(data);
+  //   }
+  // }, [data]);
 
   let chat;
 
@@ -80,7 +95,10 @@ export default function ConversationPage({
           <>
             {/* <ConversationsTab chat={chat!} /> */}
             <Tab chat={chat} />
-            <Conversation id={params.chatId} />
+            <Conversation
+              id={params.chatId}
+              loadingMessages={loadingMessages}
+            />
           </>
         )}
       </div>
